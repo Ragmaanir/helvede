@@ -18,11 +18,27 @@ public:
     current_column = 0;
   }
 
-  void print(const char * const str) {
+  void print(RawString str) {
+    uint32 col = current_column;
     for(uint16 i=0; str[i]; i++) {
-      put(current_row, current_column, definePixel(str[i], current_color));
-      current_column += 1;
-      if(current_column >= COLUMNS) {
+      put(current_row, col, definePixel(str[i], current_color));
+      col += 1;
+      if(col >= COLUMNS) {
+        col = 0;
+        newline();
+      }
+    }
+
+    current_column = col;
+  }
+
+  void write(RawString str) {
+    uint32 col = current_column;
+    for(uint16 i=0; str[i]; i++) {
+      put(current_row, col, definePixel(str[i], current_color));
+      col += 1;
+      if(col >= COLUMNS) {
+        col = 0;
         newline();
       }
     }

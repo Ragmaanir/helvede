@@ -1,0 +1,5 @@
+namespace Helvede {
+  class MemoryManager {
+
+  };
+}
