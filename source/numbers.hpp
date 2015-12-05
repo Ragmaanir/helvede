@@ -5,9 +5,9 @@ template<class T>
 struct Number {
   const T value;
   // FIXME hardcoded int64
-  enum class Limit : int64 {
-    BITS = (int64)sizeof(T)*8,
-    BASE = Math::power((int64)2, BITS-1),
+  enum class Limit : uint64 {
+    BITS = (uint64)sizeof(T)*8,
+    BASE = Math::power((uint64)2, BITS-1),
     MAX = BASE-1,
     MIN = -BASE+1
   };
@@ -26,10 +26,19 @@ struct Number {
     return value >= 0 ? value : -value;
   }
 
+  inline T bitsSet() const {
+    T v = value;
+    for (uint32 c = 0; v; c++) {
+      v &= v - 1; // clear the least significant bit set
+    }
+
+    return v;
+  }
+
   // const BoundedString<uint8> toString() const {
   RawString toString() const {
     static T divisors[9] = { Math::power(10, 8), Math::power(10, 7), Math::power(10, 6), Math::power(10, 5), Math::power(10, 4), Math::power(10, 3), Math::power(10, 2), 10, 1};
-    static char* buffer = "000000000";
+    static char* buffer = "000000000"; // FIXME allocate memory
     T v = abs();
     for(uint32 i = 0; v != 0 && i < 9; i++) {
       buffer[i] = '0' + v / divisors[i];
@@ -42,5 +51,6 @@ struct Number {
   }
 };
 
+typedef Number<int64> Int64;
 typedef Number<int32> Int32;
 typedef Number<int16> Int16;

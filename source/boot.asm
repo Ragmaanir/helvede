@@ -1,4 +1,5 @@
 global helvede_kernel_boot
+global helvede_kernel_heap_start
 
 extern helvede_kernel_long_mode
 
@@ -20,7 +21,9 @@ helvede_kernel_boot:
   mov ds, ax  ; data selector
   mov es, ax  ; extra selector
 
+  mov edi, helvede_kernel_heap_start
   jmp gdt64.code:helvede_kernel_long_mode
+  hlt
 
 print:
   mov dword [0xb8000], eax
@@ -165,3 +168,4 @@ stack_bottom:
   align 4
   resb 16384
 stack_top:
+helvede_kernel_heap_start:

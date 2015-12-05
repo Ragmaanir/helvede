@@ -3,18 +3,17 @@ global helvede_kernel_long_mode
 section .text
 bits 64
 helvede_kernel_long_mode:
-  ; print `OKAY` to screen
-  mov rax, 0x2f592f412f4b2f4f
-  mov qword [0xb8000], rax
   cli
   extern helvede_kernel_main
   call helvede_kernel_main
-  mov eax, [text_done]
-  call print
+  jmp permanent_halt
+
+permanent_halt:
   hlt
+  jmp permanent_halt
 
 print:
-  mov dword [0xb8000], eax
+  mov qword [0xb8000], rax
   ret
 
 fatal_error:
@@ -23,4 +22,5 @@ fatal_error:
 
 section .data
   ;text_hello dd 0x2f4b2f4f
-  text_done db 'X', 0x2f, 'X', 0x2f
+  text_done db 'H', 0x0e, 'a', 0x0e, 'l', 0x0e, 't', 0x0e
+  text_kernel_main db 'M', 0x2f, 'a', 0x2f, 'i', 0x2f, 'n', 0x2f

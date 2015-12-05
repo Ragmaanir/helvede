@@ -13,8 +13,8 @@ class VGATerminal {
 public:
 
   VGATerminal() : vga_memory((uint16*)0xB8000) {
-    current_color = 2;
-    current_row = 1;
+    current_color = 0x02;
+    current_row = 0;
     current_column = 0;
   }
 
