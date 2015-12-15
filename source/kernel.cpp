@@ -3,12 +3,16 @@
 #include "types.hpp"
 #include "math.hpp"
 #include "numbers.hpp"
+#include "static_array.hpp"
 #include "allocator.hpp"
 #include "kiss_allocator.hpp"
 #include "bounded_string.hpp"
 #include "vga_terminal.hpp"
+#include "cpu_id.hpp"
 #include "logger.hpp"
 #include "port.hpp"
+#include "pic.hpp"
+#include "tests.hpp"
 
 /*
 void* operator new (long unsigned int size, void* ptr) noexcept
@@ -49,11 +53,16 @@ namespace Helvede {
 
   void main(Pointer64 heap_start) {
     //allocator = instantiate((void*)0xf000, KISSAllocator(heap, 32));
-
     VGATerminal t = VGATerminal();
 
     t.clear();
+
+    CPUId id;
+    id.detect();
+    auto idstr = id.idString();
+
     t.puts("Welcome to Helvede");
+    t.puts(idstr);
     t.puts(Int64(heap_start).toString());
 
     allocator = KISSAllocator::newEmbeddedIn(heap_start, 1024);
@@ -62,6 +71,15 @@ namespace Helvede {
     allocator->allocate(128);
     t.puts(Int64((uint64)allocator->address()).toString());
     t.puts(Int64((uint64)allocator->top()).toString());
+
+    ChainedPics pics(0x20, 0x28);
+    pics.remap();
+    //pics.endInterrupt();
+    //asm("sti" ::);
+
+    Tests tests(t);
+
+    tests.run();
   }
 }
 

@@ -37,10 +37,11 @@ struct Number {
 
   // const BoundedString<uint8> toString() const {
   RawString toString() const {
-    static T divisors[9] = { Math::power(10, 8), Math::power(10, 7), Math::power(10, 6), Math::power(10, 5), Math::power(10, 4), Math::power(10, 3), Math::power(10, 2), 10, 1};
-    static char* buffer = "000000000"; // FIXME allocate memory
+    //static const T divisors[10] = { Math::power(10, 9), Math::power(10, 8), Math::power(10, 7), Math::power(10, 6), Math::power(10, 5), Math::power(10, 4), Math::power(10, 3), Math::power(10, 2), 10, 1};
+    static const uint64 divisors[10] = { Math::power(10, 9), Math::power(10, 8), Math::power(10, 7), Math::power(10, 6), Math::power(10, 5), Math::power(10, 4), Math::power(10, 3), Math::power(10, 2), 10, 1};
+    static char* buffer = "0000000000"; // FIXME allocate memory
     T v = abs();
-    for(uint32 i = 0; v != 0 && i < 9; i++) {
+    for(uint32 i = 0; i < 10; i++) {
       buffer[i] = '0' + v / divisors[i];
       v = v % divisors[i];
     }
@@ -54,3 +55,9 @@ struct Number {
 typedef Number<int64> Int64;
 typedef Number<int32> Int32;
 typedef Number<int16> Int16;
+typedef Number<int8> Int8;
+
+typedef Number<uint64> Uint64;
+typedef Number<uint32> Uint32;
+typedef Number<uint16> Uint16;
+typedef Number<uint8> Uint8;

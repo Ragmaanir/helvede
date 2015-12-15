@@ -1,6 +1,9 @@
 namespace Helvede {
+  template<class T>
   class Port {
+    /*
     const uint16 _number;
+
   public:
     Port(uint16 number) : _number(number) {}
 
@@ -35,13 +38,16 @@ namespace Helvede {
     }
 
     uint8 read8() {
-      uint8 result;
+      uint32 result;
       asm(
-        "inb %1"
+        "mov %0, eax\n"
+        "mov %1, ebx\n"
+        "inb al, bl\n"
         : "=r"(result)
         : "r"(_number)
+        :
       );
-      return result;
+      return (uint8)result;
     }
 
     uint16 read16() {
@@ -57,11 +63,53 @@ namespace Helvede {
     uint32 read32() {
       uint32 result;
       asm(
-        "inl %1"
+        ".intel_syntax noprefix\n"
+        "mov eax, 4567367\n"
+        //"mov %0, eax\n"
+        "mov %1, dx\n"
+        "ind eax, dx\n"
         : "=r"(result)
         : "r"(_number)
+        : "eax", "edx"
       );
       return result;
     }
+  */
+  };
+
+  template<>
+  class Port<uint8> {
+    const uint16 _number;
+
+  public:
+    Port(uint16 number) : _number(number) {}
+    
+    void write(uint8 value) {
+      asm(
+        ".intel_syntax noprefix\n"
+        "mov %0, al\n"
+        "mov %1, dx\n"
+        "outb dx, al\n"
+        :
+        : "r"(value), "r"(_number)
+        : "eax", "edx"
+      );
+    }
+
+
+    uint8 read() {
+      uint8 result;
+      asm(
+        ".intel_syntax noprefix\n"
+        "mov %0, al\n"
+        "mov %1, dx\n"
+        "inb al, dx\n"
+        : "=r"(result)
+        : "r"(_number)
+        : "eax", "edx"
+      );
+      return result;
+    }
+
   };
 }
