@@ -57,10 +57,7 @@ using Text = BoundedString<uint32>;
 
 namespace Helvede {
   namespace String {
-    // const BoundedString<uint8> toString() const {
-    // TODO maybe move this to BoundedString::format or so?
-    // FIXME return BoundedString<uint8>
-    //RawString toString() const {
+
     template<class T>
     Letters format(Number<T> value) {
       static const uint64 divisors[10] = {
@@ -116,5 +113,6 @@ namespace Helvede {
 
       return Letters(10 - first_digit_at, &buffer[first_digit_at]);
     }
+    
   }
 }
