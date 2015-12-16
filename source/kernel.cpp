@@ -7,6 +7,7 @@
 #include "allocator.hpp"
 #include "kiss_allocator.hpp"
 #include "bounded_string.hpp"
+#include "version.hpp"
 #include "vga_terminal.hpp"
 #include "cpu_id.hpp"
 #include "logger.hpp"
@@ -61,16 +62,19 @@ namespace Helvede {
     id.detect();
     auto idstr = id.idString();
 
-    t.puts("Welcome to Helvede");
+    t.print("Welcome to ");
+    t.print("Helvede ", VGATerminal::VGAColor::LightRed, VGATerminal::VGAColor::Black);
+    t.puts(VERSION.toString());
+    t.print("CPUID: ");
     t.puts(idstr);
-    t.puts(Int64(heap_start).toString());
+    t.puts(String::format(heap_start));
 
     allocator = KISSAllocator::newEmbeddedIn(heap_start, 1024);
     //allocator = new((void*)heap_start)KISSAllocator((void*)(heap_start + sizeof(KISSAllocator)), 32);
-    t.puts(Int64((uint64)allocator).toString());
+    t.puts(String::format((uint64)allocator));
     allocator->allocate(128);
-    t.puts(Int64((uint64)allocator->address()).toString());
-    t.puts(Int64((uint64)allocator->top()).toString());
+    t.puts(String::format((uint64)allocator->address()));
+    t.puts(String::format((uint64)allocator->top()));
 
     ChainedPics pics(0x20, 0x28);
     pics.remap();

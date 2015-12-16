@@ -1,6 +1,3 @@
-template<class Size>
-class BoundedString;
-
 template<class T>
 struct Number {
   const T value;
@@ -35,29 +32,44 @@ struct Number {
     return v;
   }
 
-  // const BoundedString<uint8> toString() const {
-  RawString toString() const {
-    //static const T divisors[10] = { Math::power(10, 9), Math::power(10, 8), Math::power(10, 7), Math::power(10, 6), Math::power(10, 5), Math::power(10, 4), Math::power(10, 3), Math::power(10, 2), 10, 1};
-    static const uint64 divisors[10] = { Math::power(10, 9), Math::power(10, 8), Math::power(10, 7), Math::power(10, 6), Math::power(10, 5), Math::power(10, 4), Math::power(10, 3), Math::power(10, 2), 10, 1};
-    static char* buffer = "0000000000"; // FIXME allocate memory
-    T v = abs();
-    for(uint32 i = 0; i < 10; i++) {
-      buffer[i] = '0' + v / divisors[i];
-      v = v % divisors[i];
-    }
-
-    // auto x = BoundedString<uint8>(9, buffer)
-    // return x;
-    return buffer;
-  }
+  // // const BoundedString<uint8> toString() const {
+  // // TODO maybe move this to BoundedString::format or so?
+  // // FIXME return BoundedString<uint8>
+  // //RawString toString() const {
+  // Letters toString() {
+  //   static const uint64 divisors[10] = {
+  //     Math::power(10, 9), Math::power(10, 8), Math::power(10, 7),
+  //     Math::power(10, 6), Math::power(10, 5), Math::power(10, 4),
+  //     Math::power(10, 3), Math::power(10, 2), 10, 1
+  //   };
+  //   static char* buffer = "          "; // FIXME allocate memory
+  //   uint64 v = abs();
+  //   int64 first_digit_at = -1;
+  //
+  //   for(uint32 i = 0; i < 10; i++) {
+  //     uint64 digit = v / divisors[i];
+  //     v = v % divisors[i];
+  //
+  //     if(first_digit_at == -1 && (digit > 0 || i==9)) {
+  //       first_digit_at = i;
+  //     }
+  //     if(first_digit_at > -1) {
+  //       buffer[i] = '0' + digit;
+  //     } else {
+  //       buffer[i] = ' ';
+  //     }
+  //   }
+  //
+  //   return Letters(10 - first_digit_at, &buffer[first_digit_at]);
+  // }
 };
 
-typedef Number<int64> Int64;
-typedef Number<int32> Int32;
-typedef Number<int16> Int16;
-typedef Number<int8> Int8;
+using Int64 = Number<int64>;
+using Int32 = Number<int32>;
+using Int16 = Number<int16>;
+using Int8  = Number<int8>;
 
-typedef Number<uint64> Uint64;
-typedef Number<uint32> Uint32;
-typedef Number<uint16> Uint16;
-typedef Number<uint8> Uint8;
+using Uint64 = Number<uint64>;
+using Uint32 = Number<uint32>;
+using Uint16 = Number<uint16>;
+using Uint8  = Number<uint8>;

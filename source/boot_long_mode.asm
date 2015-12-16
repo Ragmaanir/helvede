@@ -21,6 +21,5 @@ fatal_error:
   hlt
 
 section .data
-  ;text_hello dd 0x2f4b2f4f
   text_done db 'H', 0x0e, 'a', 0x0e, 'l', 0x0e, 't', 0x0e
   text_kernel_main db 'M', 0x2f, 'a', 0x2f, 'i', 0x2f, 'n', 0x2f

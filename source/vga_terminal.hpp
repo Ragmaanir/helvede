@@ -39,13 +39,13 @@ public:
   }
 
   template<class Size>
-  void puts(BoundedString<Size> &string) {
+  void puts(BoundedString<Size> string) {
     print(string);
     newline();
   }
 
   template<class Size>
-  void print(BoundedString<Size> &string) {
+  void print(BoundedString<Size> string) {
     uint32 col = current_column;
 
     for(Size i=0; i < string.length(); i++) {
