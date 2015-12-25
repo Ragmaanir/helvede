@@ -1,17 +1,17 @@
+enum class ComparisonResult {
+  LessThan,
+  EqualTo,
+  GreaterThan
+};
+
 template<class Size>
 class BoundedString {
 
 public:
 
-  enum class ComparisonResult {
-    LessThan,
-    EqualTo,
-    GreaterThan
-  };
-
   static Size stringLengthOf(RawString chars) {
     Size l = 0;
-    while(l < Number<Size>::Limit::MAX && chars[l]) { l++; };
+    while(l < (Size)Number<Size>::Limit::MAX && chars[l]) { l++; };
     return l;
   }
 
@@ -29,6 +29,11 @@ public:
     return _length;
   }
 
+  char at(Size index) const {
+    // TODO raise if index out of range
+    return _characters[index];
+  }
+
   template<class S>
   bool operator==(BoundedString<S> other) const {
     return compare(other) == ComparisonResult::EqualTo;
@@ -36,7 +41,33 @@ public:
 
   template<class S>
   ComparisonResult compare(BoundedString<S> other) const {
-    return ComparisonResult::EqualTo; // TODO
+    ComparisonResult res = ComparisonResult::EqualTo;
+    uint32 min_length = Math::min(_length, other.length());
+    uint32 i = 0;
+    int32 diff = 0;
+
+    for(; i<min_length; i++) {
+      diff = _characters[i] - other.at(i);
+
+      if(diff != 0) {
+        break;
+      }
+    }
+
+    if(diff==0) {
+      if(_length < other.length()) {
+        res = ComparisonResult::LessThan;
+      } else if (_length > other.length()) {
+        res = ComparisonResult::GreaterThan;
+      }
+    } else {
+      if(diff < 0) {
+        res = ComparisonResult::LessThan;
+      } else {
+        res = ComparisonResult::GreaterThan;
+      }
+    }
+    return res;
   }
 
   template<class S>
@@ -59,60 +90,27 @@ namespace Helvede {
   namespace String {
 
     template<class T>
-    Letters format(Number<T> value) {
-      static const uint64 divisors[10] = {
-        Math::power(10, 9), Math::power(10, 8), Math::power(10, 7),
-        Math::power(10, 6), Math::power(10, 5), Math::power(10, 4),
-        Math::power(10, 3), Math::power(10, 2), 10, 1
-      };
-      static char* buffer = "          "; // FIXME allocate memory
-      uint64 v = value.abs();
-      int64 first_digit_at = -1;
+    Letters to_string(T value, uint8 base = 10) {
+      // FIXME raise when base invalid
+      static char buffer[64];
+      static char *charmap = "0123456789abcdefghijklmnopqrstuvwxyz";
+      bool is_negative = value < 0;
+      uint64 i = 63;
+      value = Number<T>(value).abs();
 
-      for(uint32 i = 0; i < 10; i++) {
-        uint64 digit = v / divisors[i];
-        v = v % divisors[i];
+      do {
+        buffer[i] = charmap[value % base];
+        value /= base;
+        i--;
+      } while(value != 0);
 
-        if(first_digit_at == -1 && (digit > 0 || i==9)) {
-          first_digit_at = i;
-        }
-        if(first_digit_at > -1) {
-          buffer[i] = '0' + digit;
-        } else {
-          buffer[i] = ' ';
-        }
+      if(is_negative) {
+        buffer[i] = '-';
+        i--;
       }
 
-      return Letters(10 - first_digit_at, &buffer[first_digit_at]);
+      return Letters(63-i, &buffer[i+1]);
     }
 
-    template<class T>
-    Letters format(T value) {
-      static const uint64 divisors[10] = {
-        Math::power(10, 9), Math::power(10, 8), Math::power(10, 7),
-        Math::power(10, 6), Math::power(10, 5), Math::power(10, 4),
-        Math::power(10, 3), Math::power(10, 2), 10, 1
-      };
-      static char* buffer = "          "; // FIXME allocate memory
-      uint64 v = Number<T>(value).abs();
-      int64 first_digit_at = -1;
-
-      for(uint32 i = 0; i < 10; i++) {
-        uint64 digit = v / divisors[i];
-        v = v % divisors[i];
-
-        if(first_digit_at == -1 && (digit > 0 || i==9)) {
-          first_digit_at = i;
-        }
-        if(first_digit_at > -1) {
-          buffer[i] = '0' + digit;
-        } else {
-          buffer[i] = ' ';
-        }
-      }
-
-      return Letters(10 - first_digit_at, &buffer[first_digit_at]);
-    }
-    
   }
 }

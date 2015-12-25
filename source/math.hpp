@@ -7,6 +7,11 @@ namespace Math {
   constexpr T power(T base, T exponent) {
     return exponent==0 ? 1 : base * power(base, exponent - 1);
   }
+
+  template<class T>
+  constexpr T min(T left, T right) {
+    return left <= right ? left : right;
+  }
 };
 
 static_assert(Math::power(1,0) == 1, "1^0 != 1");

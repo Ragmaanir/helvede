@@ -30,15 +30,25 @@ print:
   ret
 
 fatal_error:
+  call error_code
   call print
+  jmp permanent_halt
+
+permanent_halt:
   hlt
+  jmp permanent_halt
+
+error_code:
+  add eax, "0"
+  or eax, 0x2f002f00
+  ret
 
 test_multiboot:
   cmp eax, 0x36d76289
   jne .no_multiboot
   ret
 .no_multiboot:
-  mov eax, "0"
+  mov eax, 0
   jmp fatal_error
 
 test_cpuid:
@@ -56,7 +66,7 @@ test_cpuid:
   jz .no_cpuid         ; The zero flag is set, no CPUID.
   ret                  ; CPUID is available for use.
 .no_cpuid:
-  mov eax, "1"
+  mov eax, 1
   jmp fatal_error
 
 test_long_mode:
@@ -70,7 +80,7 @@ test_long_mode:
   jz .no_long_mode       ; They aren't, there is no long mode.
   ret
 .no_long_mode:
-  mov eax, "2"
+  mov eax, 2
   jmp fatal_error
 
 setup_page_tables:

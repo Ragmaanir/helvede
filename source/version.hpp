@@ -7,7 +7,7 @@ namespace Helvede {
 
     Letters toString() const {
       static char str[4*3];
-      return String::format(major);
+      return String::to_string(major);
     }
   };
 

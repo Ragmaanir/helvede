@@ -13,6 +13,7 @@
 #include "logger.hpp"
 #include "port.hpp"
 #include "pic.hpp"
+#include "interrupt_descriptor_table.hpp"
 #include "tests.hpp"
 
 /*
@@ -50,6 +51,7 @@ namespace Helvede {
   //   T* item = (T*)mem;
   //   *item = data;
   //   return item;
+
   // }
 
   void main(Pointer64 heap_start) {
@@ -67,23 +69,27 @@ namespace Helvede {
     t.puts(VERSION.toString());
     t.print("CPUID: ");
     t.puts(idstr);
-    t.puts(String::format(heap_start));
+    t.puts(String::to_string(heap_start));
 
     allocator = KISSAllocator::newEmbeddedIn(heap_start, 1024);
     //allocator = new((void*)heap_start)KISSAllocator((void*)(heap_start + sizeof(KISSAllocator)), 32);
-    t.puts(String::format((uint64)allocator));
+    t.puts(String::to_string((uint64)allocator));
     allocator->allocate(128);
-    t.puts(String::format((uint64)allocator->address()));
-    t.puts(String::format((uint64)allocator->top()));
-
-    ChainedPics pics(0x20, 0x28);
-    pics.remap();
-    //pics.endInterrupt();
-    //asm("sti" ::);
+    t.puts(String::to_string((uint64)allocator->address()));
+    t.puts(String::to_string((uint64)allocator->top()));
 
     Tests tests(t);
 
     tests.run();
+
+    InterruptDescriptorTable idt(t);
+    idt.install();
+    // ChainedPics pics(0x20, 0x28);
+    // pics.remap();
+    //pics.endInterrupt();
+    //asm("sti" ::);
+
+    t.puts("--- SUCCESS ---");
   }
 }
 

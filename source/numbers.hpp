@@ -32,6 +32,17 @@ struct Number {
     return v;
   }
 
+  T mostSignificantBitPosition() const {
+    T reverse_pos = 0;
+    T tmp = value;
+    while(tmp != 0) {
+      reverse_pos++;
+      tmp >>= 1;
+    }
+
+    return Limit::BITS - reverse_pos;
+  }
+
 };
 
 using Int64 = Number<int64>;
