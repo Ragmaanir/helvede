@@ -76,6 +76,18 @@ namespace Helvede {
       $assert_equal(String::to_string(-512), Letters("-512"));
     }
 
+    void test_idt() {
+      InterruptDescriptorTable::Entry *ptr = (InterruptDescriptorTable::Entry*)0xf0f0f0f0f0f0f0f0;
+      // InterruptDescriptorTable::IDTDescriptor d = InterruptDescriptorTable::IDTDescriptor(ptr, 0x1010);
+
+      // $assert_equal(String::to_string(d.upper, 2), Letters("1000000010000111100001111000011110000111100001111000011110000"));
+      // $assert_equal(String::to_string(d.lower, 2), Letters("1111000011110000000000000000000000000000000000000000000000000000"));
+
+      InterruptDescriptorTable::IDTDescriptor d = InterruptDescriptorTable::IDTDescriptor(ptr, 0xffff);
+      $assert_equal(String::to_string(d.data[0], 2), Letters("1111111111111111111100001111000011110000111100001111000011110000"));
+      $assert_equal(String::to_string(d.data[1], 2), Letters("1111000011110000000000000000000000000000000000000000000000000000"));
+    }
+
     void test_ports() {
       // TODO
       Port<uint8> p(0x60);
@@ -95,6 +107,7 @@ namespace Helvede {
       test_static_array();
       test_string_compare();
       test_number_to_string();
+      test_idt();
       test_ports();
       terminal.newline();
       terminal.puts("END Tests ----------");

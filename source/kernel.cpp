@@ -8,6 +8,7 @@
 #include "kiss_allocator.hpp"
 #include "bounded_string.hpp"
 #include "version.hpp"
+#include "platform.hpp"
 #include "vga_terminal.hpp"
 #include "cpu_id.hpp"
 #include "logger.hpp"
@@ -69,14 +70,16 @@ namespace Helvede {
     t.puts(VERSION.toString());
     t.print("CPUID: ");
     t.puts(idstr);
+    t.print("Endianness: ");
+    t.puts(Platform::endianness_name());
     t.puts(String::to_string(heap_start));
 
-    allocator = KISSAllocator::newEmbeddedIn(heap_start, 1024);
-    //allocator = new((void*)heap_start)KISSAllocator((void*)(heap_start + sizeof(KISSAllocator)), 32);
-    t.puts(String::to_string((uint64)allocator));
-    allocator->allocate(128);
-    t.puts(String::to_string((uint64)allocator->address()));
-    t.puts(String::to_string((uint64)allocator->top()));
+    // allocator = KISSAllocator::newEmbeddedIn(heap_start, 1024);
+    // //allocator = new((void*)heap_start)KISSAllocator((void*)(heap_start + sizeof(KISSAllocator)), 32);
+    // t.puts(String::to_string((uint64)allocator));
+    // allocator->allocate(128);
+    // t.puts(String::to_string((uint64)allocator->address()));
+    // t.puts(String::to_string((uint64)allocator->top()));
 
     Tests tests(t);
 
@@ -84,10 +87,6 @@ namespace Helvede {
 
     InterruptDescriptorTable idt(t);
     idt.install();
-    // ChainedPics pics(0x20, 0x28);
-    // pics.remap();
-    //pics.endInterrupt();
-    //asm("sti" ::);
 
     t.puts("--- SUCCESS ---");
   }
