@@ -23,7 +23,7 @@ helvede_kernel_boot:
 
   mov edi, helvede_kernel_heap_start
   jmp gdt64.code:helvede_kernel_long_mode
-  hlt
+  jmp permanent_halt
 
 print:
   mov dword [0xb8000], eax

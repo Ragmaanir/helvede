@@ -14,25 +14,15 @@ namespace Helvede {
     Pic(uint8 offset, Port<uint8> cmd, Port<uint8> data)
       : _offset(offset), _commandPort(cmd), _dataPort(data) {}
 
-    void end_interrupt() {
-      _commandPort.write(Commands::EOI);
-    }
+    void end_interrupt()          { _commandPort.write(Commands::EOI); }
 
-    uint8 read_command() {
-      return _commandPort.read();
-    }
+    uint8 read_command()          { return _commandPort.read(); }
+    void write_command(uint8 cmd) { _commandPort.write(cmd); }
 
-    void write_command(uint8 cmd) {
-      _commandPort.write(cmd);
-    }
+    uint8 read_data()             { return _dataPort.read(); }
+    void write_data(uint8 data)   { _dataPort.write(data); }
 
-    void write_data(uint8 data) {
-      _dataPort.write(data);
-    }
-
-    uint8 offset() const {
-      return _offset;
-    }
+    uint8 offset() const          { return _offset; }
   };
 
   class ChainedPics {
@@ -40,9 +30,7 @@ namespace Helvede {
 
   public:
 
-    enum SetupData {
-      ICW4_8086 = 0x1
-    };
+    enum SetupData { ICW4_8086 = 0x1 };
 
     ChainedPics(uint8 offset1, uint8 offset2) :
       _pics({
@@ -51,13 +39,8 @@ namespace Helvede {
       })
     {}
 
-    Pic& first() {
-      return _pics[0];
-    }
-
-    Pic& second() {
-      return _pics[1];
-    }
+    Pic& first()  { return _pics[0]; }
+    Pic& second() { return _pics[1]; }
 
     void end_interrupt(uint8 irq) {
       if(irq > 8)
@@ -66,10 +49,10 @@ namespace Helvede {
     }
 
     void remap() {
-      uint8 a1, a2;
+      uint8 mask1, mask2;
 
-    	a1 = _pics[0].read_command();
-    	a2 = _pics[1].read_command();
+    	mask1 = _pics[0].read_data();
+    	mask2 = _pics[1].read_data();
 
       _pics[0].write_command(Pic::Commands::INIT);
       _pics[1].write_command(Pic::Commands::INIT);
@@ -83,8 +66,8 @@ namespace Helvede {
       _pics[0].write_data(ICW4_8086);
       _pics[1].write_data(ICW4_8086);
 
-      _pics[0].write_data(a1);
-      _pics[1].write_data(a2);
+      _pics[0].write_data(mask1);
+      _pics[1].write_data(mask2);
     }
   };
 }

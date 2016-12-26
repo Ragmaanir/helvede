@@ -21,9 +21,9 @@ namespace Helvede {
 
     }
 
-    uint32 capacity() const { return _capacity; }
+    uint32 capacity()       const { return _capacity; }
     uint32 allocatedBytes() const { return 0; }
-    uint32 freeBytes() const { return 0; }
+    uint32 freeBytes()      const { return 0; }
 
     const AllocatorStats stats() const {
       return AllocatorStats();
@@ -38,11 +38,11 @@ namespace Helvede {
 
     }
 
-    const void* const address() const {
+    const void* address() const {
       return (void*)_address;
     }
 
-    const void* const top() const {
+    const void* top() const {
       return (void*)_top;
     }
   };

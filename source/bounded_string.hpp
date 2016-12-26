@@ -15,19 +15,17 @@ public:
     return l;
   }
 
-  BoundedString(RawString chars) : _length(stringLengthOf(chars)), _characters(chars) {
-  }
+  BoundedString(RawString chars)
+    : _length(stringLengthOf(chars)), _characters(chars) { }
 
-  BoundedString(Size l, RawString chars) : _length(l), _characters(chars) {
-  }
+  BoundedString(Size l, RawString chars)
+    : _length(l), _characters(chars) { }
 
   RawString rawString() const {
     return _characters;
   }
 
-  Size length() const {
-    return _length;
-  }
+  Size length() const { return _length; }
 
   char at(Size index) const {
     // TODO raise if index out of range
@@ -93,7 +91,7 @@ namespace Helvede {
     Letters to_string(T value, uint8 base = 10) {
       // FIXME raise when base invalid
       static char buffer[64];
-      static char *charmap = "0123456789abcdefghijklmnopqrstuvwxyz";
+      static const char *charmap = "0123456789abcdefghijklmnopqrstuvwxyz";
       bool is_negative = value < 0;
       uint64 i = 63;
       value = Number<T>(value).abs();
@@ -110,6 +108,29 @@ namespace Helvede {
       }
 
       return Letters(63-i, &buffer[i+1]);
+    }
+
+    // template<>
+    // Letters to_string(uint8* value, uint8 base = 10) {
+    // }
+
+    template<>
+    Letters to_string(ComparisonResult value, uint8 base) {
+      switch(value) {
+        case ComparisonResult::EqualTo:
+          return Letters(2, "==");
+        case ComparisonResult::GreaterThan:
+          return Letters(1, ">");
+        case ComparisonResult::LessThan:
+          return Letters(1, "<");
+      }
+
+      return Letters("??");
+    }
+
+    template<>
+    Letters to_string(Letters value, uint8 base) {
+      return value;
     }
 
   }

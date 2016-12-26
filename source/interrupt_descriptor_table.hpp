@@ -1,11 +1,61 @@
-extern void* irq_keyboard_handler;
-extern void* empty_irq_handler;
+
+extern "C" {
+  void keyboard_isr_handler();
+  void empty_isr_handler();
+  //void common_isr_handler();
+
+  void core_isr_0();
+  void core_isr_1();
+  void core_isr_2();
+  void core_isr_3();
+  void core_isr_4();
+  void core_isr_5();
+  void core_isr_6();
+  void core_isr_7();
+  void core_isr_8();
+  void core_isr_9();
+  void core_isr_10();
+  void core_isr_11();
+  void core_isr_12();
+  void core_isr_13();
+  void core_isr_14();
+  void core_isr_15();
+  void core_isr_16();
+  void core_isr_17();
+  void core_isr_18();
+  void core_isr_19();
+  void core_isr_20();
+  void core_isr_21();
+  void core_isr_22();
+  void core_isr_23();
+  void core_isr_24();
+  void core_isr_25();
+  void core_isr_26();
+  void core_isr_27();
+  void core_isr_28();
+  void core_isr_29();
+  void core_isr_30();
+  void core_isr_31();
+  void core_isr_32();
+  void core_isr_33();
+}
+
+extern "C" void keyboard_isr_handler_callback() {
+  VGATerminal t;
+  t.puts("IRQ:YYY");
+}
+
+extern "C" void empty_isr_handler_callback() {
+  VGATerminal t;
+  t.puts("IRQ:empty");
+}
+
+extern "C" void common_isr_handler_callback() {
+  VGATerminal t;
+  t.puts("IRQ:XXX");
+}
 
 namespace Helvede {
-
-  extern "C" void keyboard_handler_main() {
-
-  }
 
   class InterruptDescriptorTable {
   public:
@@ -13,125 +63,110 @@ namespace Helvede {
     static const uint32 IDT_ENTRY_COUNT = 256;
 
     union Entry {
-      uint32 data[4];
+      uint8 data[16];
+      struct Structured {
+        uint16 offset_low;
+        uint16 selector;   // a code segment selector in GDT or LDT
+        uint16 flags;
+        uint16 offset_mid;
+        uint32 offset_high;
+        uint32 zero;
+      } __attribute__((packed)) structured;
 
-      // __attribute__(packed)
-      // struct Structured {
-      //   uint16 offset_low;
-      //   uint16 selector;   // a code segment selector in GDT or LDT
-      //   uint16 flags;
-      //   uint16 offset_mid;
-      //   uint32 offset_high;
-      //   uint64 zero;
-      // } structured;
-      //
-      // static_assert(sizeof(Structured) == 16, "Structured size");
+      static_assert(sizeof(Structured) == 16, "Structured size");
 
-      Entry() : Entry(0) {}
+      Entry() : Entry((void*)empty_isr_handler) {}
 
       Entry(void* ptr) {
         uint64 address = (uint64)ptr;
 
-        uint32 flags = (0x1 << 15) | (0xE << 7);
         const uint32 WORD = 0xffff;
         const uint32 DWORD = 0xffffffff;
 
-        /*
-          2 | offset low
-          2 | selector
-          1 | zero
-          1 | type/attributes
-          2 | offset middle
-          ---
-          4 | offset high
-          4 | zero
-          --------
-          8+8 bytes
-        */
-
-        /*
-          00000000.00001000.10001110.00000000.00101001.00111100.10111000.01001000
-          00101000.00111100.10111000.01001000.00000000.00000000.00000000.00000000
-
-          10111000.01001000.00000000.00001000
-          00101101.01111000.10000111.00000000
-
-          Bochs check
-          00000000.00000000.00011111.00000000.00000000.00000000.00000000.00000000
-          IDT
-          10111000.01001000.00000000.00001000.00101101.01111000.10000111.00000000
-          00000000.00000000.00000000.00000000.00000000.00000000.00000000.00010000
-        */
-
-        data[0] =
-          ((address & WORD) << 16) |
-          (0x8);
-
-        data[1] =
-          (address & (WORD << 16)) |
-          flags;
-
-        data[2] = (address >> 32) & DWORD;
-        data[3] = 0;
-
-        // data[0] =
-        //   (address & F4) |
-        //   ((uint64)0x8 << 48) |
-        //   (0 << 40) |
-        //   (flags << 32) |
-        //   (address & (F4 << 16));
-        //
-        // data[1] = (address & F8) << 32;
+        structured.offset_low = address & WORD;
+        structured.selector = 0x8;
+        structured.flags = (0x1 << 15) | (0xE << 8);
+        structured.offset_mid = (address >> 16) & WORD;
+        structured.offset_high = (address >> 32) & DWORD;
+        structured.zero = 0;
       }
     };
 
     static_assert(sizeof(Entry) == 16, "Entry size");
 
-    class IDTDescriptor {
-    public:
-      uint64 data[2];
+    union IDTDescriptor {
+      uint8 data[16];
 
-      IDTDescriptor() : data({0,0}) {}
+      struct Structured {
+        uint16 limit;
+        uint64 base;
+      } __attribute__((packed)) structured;
+
+      IDTDescriptor() {
+        IDTDescriptor(0,0);
+      }
 
       IDTDescriptor(Entry *base, uint16 limit) {
         uint64 address = (uint64)base;
-        // upper = ((uint64)limit << 48) + (address >> 16);
-        // lower = (address & 0xffff) <<  48;
-        data[0] = limit + ((address & 0xffffffffffff) << 16);
-        data[1] = address & (0xffff << 48);
+
+        structured.limit = limit;
+        structured.base = address;
       }
     };
 
     static_assert(sizeof(IDTDescriptor) == 16, "IDTDescriptor size");
 
     InterruptDescriptorTable(VGATerminal& t) : _chained_pics(0x20, 0x28), _t(t) {
-
+      t.puts(
+        "PIC: ",
+        "0: ", _chained_pics.first().offset(),
+        " 1: ", _chained_pics.second().offset()
+      );
     }
 
     void install() {
-      //uint64 idt_addr = ((uint64)&_entries);
-      //_idt_desc.base = ((uint64)&_entries);
-      //_idt_desc.limit = IDT_ENTRY_COUNT * sizeof(Entry);
-      //_idt_desc.limit = 64 * 10;
+      //VGATerminal t(10, 0);
+      VGATerminal t = _t;
 
-      //_idt_desc.limit = (IDT_ENTRY_COUNT * sizeof(Entry)) + ((idt_addr & 0xffff) << 16);
-      //_idt_desc.base = idt_addr >> 16;
-      // _idt_desc.limit = idt_addr & 0xffff0000;
-      // _idt_desc.base = idt_addr & 0xffff;
+      t.puts(" ");
+      t.puts("First: ", _chained_pics.first().offset());
+      t.puts("Second: ", _chained_pics.first().offset());
 
-      _idt_desc = IDTDescriptor(_entries, 0x00ff);
+      _chained_pics.remap();
 
-      _t.puts("---- ENTRIES POINTER");
-      _t.puts(String::to_string((uint64)_entries, 2));
-      _t.puts("---- UPPER & LOWER");
-      _t.puts(String::to_string(_idt_desc.data[0], 2));
-      _t.puts(String::to_string(_idt_desc.data[1], 2));
+      t.puts("After Remap: ", _chained_pics.first().offset());
+      t.puts("After Remap 2: ", _chained_pics.first().offset());
 
-      if((uint64)_entries > ((_idt_desc.data[0] & 0xffffffffffff) << 16) + (_idt_desc.data[1] >> 48)) {
-        _t.puts("ENTRYPTR > ADDR/LIMIT");
-        _t.puts(String::to_string((_idt_desc.data[0] & 0xffffffffffff) << 16, 2));
-        _t.puts(String::to_string(_idt_desc.data[1] >> 48, 2));
+      t.puts(
+        "PIC offset X: ",
+        _chained_pics.first().offset(),
+        " ",
+        _chained_pics.second().offset()
+      );
+
+      t.puts(
+        "PIC offset Y: ",
+        _chained_pics.first().offset(),
+        " ",
+        _chained_pics.second().offset()
+      );
+
+      t.puts(
+        "core_isr_0: ", (uint64)core_isr_0,
+        " interrupt_routines[0]: ", (uint64)interrupt_routines[0]
+      );
+
+      // for(uint32 i=0; i < sizeof(interrupt_routines)/sizeof(interrupt_routines[0]); i++) {
+      //   _entries[_chained_pics.first().offset()+i] = Entry((void*)interrupt_routines[i]);
+      // }
+
+      uint8 offset = _chained_pics.first().offset();
+
+      for(uint32 i=0; i < 16; i++) {
+        _entries[offset+i] = Entry((void*)interrupt_routines[i]);
       }
+
+      _idt_desc = IDTDescriptor(_entries, IDT_ENTRY_COUNT * sizeof(Entry) - 1);
 
       asm(
         "mov rax, %0\n"
@@ -139,18 +174,53 @@ namespace Helvede {
         :: "r"(&_idt_desc)
       );
 
-      _chained_pics.remap();
-
-      Entry entry = Entry(irq_keyboard_handler);
-      _entries[_chained_pics.first().offset()] = entry;
-
-      /*
-        00000000.00001000.10001110.00000000.00101001.00111100.10111000.01001000
-        00101000.00111100.10111000.01001000.00000000.00000000.00000000.00000000
-      */
-
       asm("sti" ::);
+      asm("xchg bx, bx" ::);
+      _chained_pics.first().write_data(0xFD);
+      _chained_pics.first().write_data(0);
     }
+
+    /*
+    * Raw pointer table to ISRs defined in assembler.
+    */
+    typedef void (*ISR_Pointer)();
+
+    ISR_Pointer interrupt_routines[34] = {
+      core_isr_0,
+      core_isr_1,
+      core_isr_2,
+      core_isr_3,
+      core_isr_4,
+      core_isr_5,
+      core_isr_6,
+      core_isr_7,
+      core_isr_8,
+      core_isr_9,
+      core_isr_10,
+      core_isr_11,
+      core_isr_12,
+      core_isr_13,
+      core_isr_14,
+      core_isr_15,
+      core_isr_16,
+      core_isr_17,
+      core_isr_18,
+      core_isr_19,
+      core_isr_20,
+      core_isr_21,
+      core_isr_22,
+      core_isr_23,
+      core_isr_24,
+      core_isr_25,
+      core_isr_26,
+      core_isr_27,
+      core_isr_28,
+      core_isr_29,
+      core_isr_30,
+      core_isr_31,
+      core_isr_32,
+      core_isr_33
+    };
 
   private:
 
@@ -159,4 +229,5 @@ namespace Helvede {
     IDTDescriptor _idt_desc;
     VGATerminal& _t;
   };
+
 }

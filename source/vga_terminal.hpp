@@ -1,55 +1,49 @@
-typedef uint8 color;
-
 class VGATerminal {
   static uint16 const ROWS = 25;
   static uint16 const COLUMNS = 80;
   //static uint16* const VGA_MEMORY_ADDRESS = (uint64)0xB8000;
 
-  uint16* const vga_memory;
-  color current_color;
-  uint16 current_row;
-  uint16 current_column;
+  uint16* const _vga_memory;
+  Coloring _current_color;
+  uint16 _current_row;
+  uint16 _current_column;
 
 public:
 
-  enum class VGAColor : uint8 {
-    Green = 0x2,
-    LightGreen = 0xa,
-    Gray = 0x7,
-    Marine = 0x3,
-    DarkGray = 0x8,
-    Yellow = 0x9,
-    LightYellow = 0xe,
-    Orange = 0x6,
-    Red = 0x4,
-    LightRed = 0xc,
-    DarkBlue = 0x1,
-    Blue = 0x9,
-    LightBlue = 0xb,
-    Pink = 0x5,
-    LightPink = 0xd,
-    White = 0xf,
-    Black = 0
-  };
-
-  VGATerminal() : vga_memory((uint16*)0xB8000) {
-    current_color = 0x02;
-    current_row = 0;
-    current_column = 0;
+  VGATerminal() : _vga_memory((uint16*)0xB8000) {
+    _current_color = TermColorings::WhiteOnBlack;
+    _current_row = 0;
+    _current_column = 0;
   }
 
-  template<class Size>
-  void puts(BoundedString<Size> string) {
-    print(string);
-    newline();
+  VGATerminal(uint16 row, uint16 column)
+    : _vga_memory((uint16*)0xB8000),
+      _current_row(row),
+      _current_column(column) {
+    _current_color = TermColorings::WhiteOnBlack;
+  }
+
+  void print(bool value) {
+    print(value ? "true" : "false");
+  }
+
+  template<class T>
+  void print(T arg) {
+    print(Helvede::String::to_string(arg));
+  }
+
+  template<class T, class... Args>
+  void print(T arg, Args... args) {
+    print(arg);
+    print(args...);
   }
 
   template<class Size>
   void print(BoundedString<Size> string) {
-    uint32 col = current_column;
+    uint32 col = _current_column;
 
     for(Size i=0; i < string.length(); i++) {
-      put(current_row, col, definePixel(string.rawString()[i], current_color));
+      put(_current_row, col, definePixel(string.rawString()[i], _current_color.value));
       col += 1;
       if(col >= COLUMNS) {
         col = 0;
@@ -57,21 +51,41 @@ public:
       }
     }
 
-    current_column = col;
+    _current_column = col;
+  }
+
+  template<class Size>
+  void print(BoundedString<Size> string, Coloring coloring) {
+    Coloring prev_color = _current_color;
+    _current_color = coloring;
+
+    print(string);
+
+    _current_color = prev_color;
+  }
+
+  template<class Size>
+  void print(BoundedString<Size> string, VGAColor foreground, VGAColor background) {
+    Coloring prev_color = _current_color;
+    _current_color = Coloring(foreground, background);
+
+    print(string);
+
+    _current_color = prev_color;
   }
 
   void print(RawString str) {
-    print(str, current_color);
+    print(str, _current_color);
   }
 
   void print(RawString str, VGAColor foreground, VGAColor background) {
-    print(str, ((uint8)background << 4) + (uint8)foreground);
+    print(str, Coloring(foreground, background));
   }
 
-  void print(RawString str, uint8 color) {
-    uint32 col = current_column;
+  void print(RawString str, Coloring color) {
+    uint32 col = _current_column;
     for(uint16 i=0; str[i]; i++) {
-      put(current_row, col, definePixel(str[i], color));
+      put(_current_row, col, definePixel(str[i], color.value));
       col += 1;
       if(col >= COLUMNS) {
         col = 0;
@@ -79,7 +93,7 @@ public:
       }
     }
 
-    current_column = col;
+    _current_column = col;
   }
 
   /*void write(RawString str) {
@@ -94,6 +108,36 @@ public:
     }
   }*/
 
+  template<class T, class... Args>
+  void puts(T arg, Args... args) {
+    print(arg);
+    print(args...);
+    newline();
+  }
+
+  template<class T>
+  void puts(T arg) {
+    print(arg);
+    newline();
+  }
+
+  // void puts(bool value) {
+  //   print(value);
+  //   newline();
+  // }
+
+  template<class Size>
+  void puts(BoundedString<Size> string) {
+    print(string);
+    newline();
+  }
+
+  template<class Size>
+  void puts(BoundedString<Size> string, VGAColor foreground, VGAColor background) {
+    print(string, foreground, background);
+    newline();
+  }
+
   void puts(RawString str, VGAColor foreground, VGAColor background) {
     print(str, foreground, background);
     newline();
@@ -105,8 +149,8 @@ public:
   }
 
   void newline() {
-    current_row += 1;
-    current_column = 0;
+    _current_row += 1;
+    _current_column = 0;
   }
 
   void clear() {
@@ -124,6 +168,6 @@ private:
   }
 
   void put(uint16 row, uint16 column, uint16 pixel) {
-    vga_memory[row * COLUMNS + column] = pixel;
+    _vga_memory[row * COLUMNS + column] = pixel;
   }
 };

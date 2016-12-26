@@ -5,8 +5,7 @@ namespace Helvede {
     const uint8 patch;
     const uint8 build;
 
-    Letters toString() const {
-      static char str[4*3];
+    const Letters to_string() const {
       return String::to_string(major);
     }
   };

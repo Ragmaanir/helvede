@@ -7,7 +7,7 @@ typedef unsigned int uint32;
 typedef long long int int64;
 typedef unsigned long long int uint64;
 
-typedef const char * const RawString;
+typedef const char * RawString;
 typedef uint64 Pointer64;
 
 static_assert(sizeof(int8) == 1, "incorrect size");

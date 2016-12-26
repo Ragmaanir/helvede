@@ -9,6 +9,7 @@
 #include "bounded_string.hpp"
 #include "version.hpp"
 #include "platform.hpp"
+#include "colors.hpp"
 #include "vga_terminal.hpp"
 #include "cpu_id.hpp"
 #include "logger.hpp"
@@ -28,6 +29,11 @@ void operator delete (void* ptr) noexcept
 
 }
 */
+
+void operator delete(void* ptr, long unsigned int length)  noexcept
+{
+
+}
 
 void operator delete (void* ptr) noexcept
 {
@@ -56,6 +62,8 @@ namespace Helvede {
   // }
 
   void main(Pointer64 heap_start) {
+    TermColorings::static_init();
+
     //allocator = instantiate((void*)0xf000, KISSAllocator(heap, 32));
     VGATerminal t = VGATerminal();
 
@@ -63,11 +71,11 @@ namespace Helvede {
 
     CPUId id;
     id.detect();
-    auto idstr = id.idString();
+    auto idstr = id.id_string();
 
     t.print("Welcome to ");
-    t.print("Helvede ", VGATerminal::VGAColor::LightRed, VGATerminal::VGAColor::Black);
-    t.puts(VERSION.toString());
+    t.print("Helvede ", VGAColor::LightRed, VGAColor::Black);
+    t.puts(VERSION.to_string());
     t.print("CPUID: ");
     t.puts(idstr);
     t.print("Endianness: ");

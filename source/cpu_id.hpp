@@ -42,13 +42,15 @@ namespace Helvede {
       {"UMC UMC UMC ", Vendor::UMC}
     };
 
-    CPUId() {
-      for(char c : _idString) {
-        c = '\0';
-      }
-    }
+    // CPUId() {
+    //   for(char c : _idString) {
+    //     c = '\0';
+    //   }
+    // }
 
-    void readCPUIdString() {
+    CPUId() : _id_string{0,0,0,0,0,0,0,0,0,0,0,0,0} {}
+
+    void read_cpu_id_string() {
       uint32 parts[3] = {0,0,0};
       asm(
         "mov eax, 0x0\n"
@@ -61,14 +63,14 @@ namespace Helvede {
         : "ebx", "ecx", "edx"
       );
 
-      uint32* ptr = (uint32*)_idString;
+      uint32* ptr = (uint32*)_id_string;
       ptr[0] = parts[0];
       ptr[1] = parts[2]; // 2 is intended
       ptr[2] = parts[1];
     }
 
     void detect() {
-      readCPUIdString();
+      read_cpu_id_string();
 
       // switch(_idString) {
       //   case "AMDisbetter!": _vendor = Vendor::OldAMD; break;
@@ -88,16 +90,19 @@ namespace Helvede {
       // }
     }
 
-    Letters idString() const {
-      return Letters(12, _idString);
+    Letters id_string() const {
+      return Letters(12, _id_string);
     }
 
-    RawString rawIdString() const {
-      return _idString;
+    RawString raw_id_string() const {
+      return _id_string;
     }
 
   private:
-    char _idString[13];
+
+    static const uint32 Length = 13;
+
+    char _id_string[Length];
 
   };
 }

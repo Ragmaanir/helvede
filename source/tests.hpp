@@ -9,11 +9,15 @@ namespace Helvede {
     void assert_equal(A left, B right, RawString msg) {
       if(left == right) {
         //terminal.print("OK   ", VGATerminal::VGAColor::Green, VGATerminal::VGAColor::Black);
-        terminal.print(".", VGATerminal::VGAColor::Green, VGATerminal::VGAColor::Black);
+        terminal.print(".", VGAColor::Green, VGAColor::Black);
       } else {
         terminal.newline();
-        terminal.print("FAIL ", VGATerminal::VGAColor::Red, VGATerminal::VGAColor::Black);
-        terminal.puts(msg, VGATerminal::VGAColor::Gray, VGATerminal::VGAColor::Black);
+        terminal.puts("FAIL: not equal", VGAColor::Red, VGAColor::Black);
+        // terminal.print(String::to_string((int8)left), VGATerminal::VGAColor::Gray, VGATerminal::VGAColor::Black);
+        // terminal.print(String::to_string((int8)right), VGATerminal::VGAColor::Gray, VGATerminal::VGAColor::Black);
+        terminal.puts(String::to_string(left), VGAColor::Gray, VGAColor::Black);
+        terminal.puts(String::to_string(right), VGAColor::Gray, VGAColor::Black);
+        //terminal.puts(msg, VGATerminal::VGAColor::Gray, VGATerminal::VGAColor::Black);
       }
     }
 
@@ -30,6 +34,13 @@ namespace Helvede {
 
       //arr.each([&](uint16 v) -> void { t.puts(Uint16(v).toString()); });
       //arr.each([](uint16 v) -> void { 2; });
+    }
+
+    void test_coloring() {
+      $assert_equal(TermColorings::GreenOnBlack.value, 0x2);
+      $assert_equal(TermColorings::WhiteOnBlack.value, 0xf);
+      $assert_equal(Coloring(0x44).value, 0x44);
+      $assert_equal(Coloring(VGAColor::Red, VGAColor::White).value, 244);
     }
 
     void test_string_compare() {
@@ -84,15 +95,26 @@ namespace Helvede {
       // $assert_equal(String::to_string(d.lower, 2), Letters("1111000011110000000000000000000000000000000000000000000000000000"));
 
       InterruptDescriptorTable::IDTDescriptor d = InterruptDescriptorTable::IDTDescriptor(ptr, 0xffff);
-      $assert_equal(String::to_string(d.data[0], 2), Letters("1111111111111111111100001111000011110000111100001111000011110000"));
-      $assert_equal(String::to_string(d.data[1], 2), Letters("1111000011110000000000000000000000000000000000000000000000000000"));
+      // $assert_equal(String::to_string(d.data[0], 2), Letters("1111111111111111111100001111000011110000111100001111000011110000"));
+      // $assert_equal(String::to_string(d.data[1], 2), Letters("1111000011110000000000000000000000000000000000000000000000000000"));
+      // $assert_equal(String::to_string(*((uint64*)d.data), 2), Letters("1111111111111111111100001111000011110000111100001111000011110000"));
+      // $assert_equal(String::to_string(*((uint64*)d.data), 2), Letters("1111000011110000000000000000000000000000000000000000000000000000"));
+
+      uint64 val1 = 0b1111000011110000111100001111000011110000111100001111111111111111;
+      uint64 val2 = 0b1111000011110000;
+
+      $assert_equal(((uint64*)d.data)[0], val1);
+      $assert_equal(((uint64*)d.data)[1], val2);
+
+      // terminal.puts(String::to_string(((uint64*)d.data)[0], 2));
+      // terminal.puts(String::to_string(((uint64*)d.data)[1], 2));
     }
 
     void test_ports() {
       // TODO
-      Port<uint8> p(0x60);
+      // Port<uint8> p(0x60);
 
-      uint8 c = 0;
+      // uint8 c = 0;
 
       /*
       while(c == 0) c = p.read();
@@ -100,6 +122,12 @@ namespace Helvede {
       terminal.print("IN: ");
       terminal.puts(String::to_string(c));
       */
+
+      // Port<uint8> com(0x3f8); // COM1
+
+      // for(uint8 i=0; i<100; i++) {
+      //   com.write(i);
+      // }
     }
 
     void run() {
@@ -107,6 +135,7 @@ namespace Helvede {
       test_static_array();
       test_string_compare();
       test_number_to_string();
+      test_coloring();
       test_idt();
       test_ports();
       terminal.newline();
