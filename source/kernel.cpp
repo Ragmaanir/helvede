@@ -11,6 +11,7 @@
 #include "platform.hpp"
 #include "colors.hpp"
 #include "vga_terminal.hpp"
+#include "assertions.hpp"
 #include "cpu_id.hpp"
 #include "logger.hpp"
 #include "port.hpp"
@@ -97,6 +98,21 @@ namespace Helvede {
     idt.install();
 
     t.puts("--- SUCCESS ---");
+
+    uint64 s = 0;
+
+    t.newline();
+    char* cs = "-\\|/";
+
+    const uint32 max = 10000000;
+    for(uint32 i=0; i < max; i++) {
+      s += 1;
+
+      VGATerminal t2(16, 30);
+      t2.print(100 * i / max, "%");
+    }
+
+    t.puts("--- DONE ---", s);
   }
 }
 

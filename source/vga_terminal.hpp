@@ -108,6 +108,12 @@ public:
     }
   }*/
 
+
+  void puts(const char* const str, Coloring coloring) {
+    print(str, coloring);
+    newline();
+  }
+
   template<class T, class... Args>
   void puts(T arg, Args... args) {
     print(arg);

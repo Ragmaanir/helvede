@@ -1,4 +1,34 @@
 
+#define $$concat(a, ...) $$concat_f(a, __VA_ARGS__)
+#define $$concat_f(a, ...) a ## __VA_ARGS__
+// #define $$empty(...)
+// #define $repeat_f() $repeat
+// #define $repeat(n, exp) exp && $$eval($repeat_f)()(n-1, exp)
+// #define $$eval(...) __VA_ARGS__ $$empty()
+// #define $$eval_f(f, args) (f ## args) $$empty()
+
+#define $repeat(n, exp) $repeat_##n(exp)
+#define $repeat_1(exp) exp;
+#define $repeat_2(exp) exp; $repeat_1(exp)
+#define $repeat_3(exp) exp; $repeat_2(exp)
+#define $repeat_4(exp) exp; $repeat_3(exp)
+#define $repeat_5(exp) exp; $repeat_4(exp)
+#define $repeat_6(exp) exp; $repeat_5(exp)
+#define $repeat_7(exp) exp; $repeat_6(exp)
+#define $repeat_8(exp) exp; $repeat_7(exp)
+#define $repeat_9(exp) exp; $repeat_8(exp)
+#define $repeat_10(exp) exp; $repeat_9(exp)
+#define $repeat_11(exp) exp; $repeat_10(exp)
+
+//#define $rep(n, exp) (n==1) ? exp : $rep_r(n, exp)
+//#define $rep_r(n, exp) $rep(n-1, exp)
+//#define $$delay(name, ...) (($ ## name))(__VA_ARGS__)
+
+// void macros() {
+//   int i = 0;
+//   $repeat(4, (i += 1));
+// }
+
 extern "C" {
   void keyboard_isr_handler();
   void empty_isr_handler();
@@ -6,38 +36,7 @@ extern "C" {
 
   void core_isr_0();
   void core_isr_1();
-  void core_isr_2();
-  void core_isr_3();
-  void core_isr_4();
-  void core_isr_5();
-  void core_isr_6();
-  void core_isr_7();
-  void core_isr_8();
-  void core_isr_9();
-  void core_isr_10();
-  void core_isr_11();
-  void core_isr_12();
-  void core_isr_13();
-  void core_isr_14();
-  void core_isr_15();
-  void core_isr_16();
-  void core_isr_17();
-  void core_isr_18();
-  void core_isr_19();
-  void core_isr_20();
-  void core_isr_21();
-  void core_isr_22();
-  void core_isr_23();
-  void core_isr_24();
-  void core_isr_25();
-  void core_isr_26();
-  void core_isr_27();
-  void core_isr_28();
-  void core_isr_29();
-  void core_isr_30();
-  void core_isr_31();
-  void core_isr_32();
-  void core_isr_33();
+  void core_isr_64();
 }
 
 extern "C" void keyboard_isr_handler_callback() {
@@ -50,9 +49,18 @@ extern "C" void empty_isr_handler_callback() {
   t.puts("IRQ:empty");
 }
 
-extern "C" void common_isr_handler_callback() {
-  VGATerminal t;
-  t.puts("IRQ:XXX");
+static uint64 invocation_count = 0;
+
+extern "C" void common_isr_handler_callback(uint64 i) {
+  invocation_count += 1;
+  if(i == 1) {
+    VGATerminal t(18,0);
+    t.puts("KEYBOARD");
+  }
+  else {
+    VGATerminal t(16,0);
+    t.puts("IRQ #", i, " count: ", invocation_count);
+  }
 }
 
 namespace Helvede {
@@ -124,6 +132,10 @@ namespace Helvede {
       );
     }
 
+    uint64 isr_size() {
+      return (uint64)core_isr_1 - (uint64)core_isr_0;
+    }
+
     void install() {
       //VGATerminal t(10, 0);
       VGATerminal t = _t;
@@ -151,19 +163,50 @@ namespace Helvede {
         _chained_pics.second().offset()
       );
 
-      t.puts(
-        "core_isr_0: ", (uint64)core_isr_0,
-        " interrupt_routines[0]: ", (uint64)interrupt_routines[0]
-      );
-
       // for(uint32 i=0; i < sizeof(interrupt_routines)/sizeof(interrupt_routines[0]); i++) {
       //   _entries[_chained_pics.first().offset()+i] = Entry((void*)interrupt_routines[i]);
       // }
 
-      uint8 offset = _chained_pics.first().offset();
+      // const uint16 PORT = 0x3f8;
+      // Port<uint8>(PORT + 1).write(0x00);
+      // Port<uint8>(PORT + 3).write(0x80);
+      // Port<uint8>(PORT + 0).write(0x03);
+      // Port<uint8>(PORT + 1).write(0x00);
+      // Port<uint8>(PORT + 3).write(0x03);
+      // Port<uint8>(PORT + 2).write(0xC7);
+      // Port<uint8>(PORT + 4).write(0x0B);
 
-      for(uint32 i=0; i < 16; i++) {
-        _entries[offset+i] = Entry((void*)interrupt_routines[i]);
+      // while (Port<uint8>(PORT + 5).read() & 0x20 == 0);
+
+      // Port<uint8>(PORT).write(0x45);
+      // Port<uint8>(PORT).write(0x34);
+      // Port<uint8>(PORT).write(0x88);
+
+      // for(int i=0; i< 10000; i++) {
+      //   Port<uint8>(PORT).write(i);
+      // }
+
+      // outb(PORT + 1, 0x00);    // Disable all interrupts
+      // outb(PORT + 3, 0x80);    // Enable DLAB (set baud rate divisor)
+      // outb(PORT + 0, 0x03);    // Set divisor to 3 (lo byte) 38400 baud
+      // outb(PORT + 1, 0x00);    //                  (hi byte)
+      // outb(PORT + 3, 0x03);    // 8 bits, no parity, one stop bit
+      // outb(PORT + 2, 0xC7);    // Enable FIFO, clear them, with 14-byte threshold
+      // outb(PORT + 4, 0x0B);    // IRQs enabled, RTS/DSR set
+
+      uint8 offset = 0; //_chained_pics.first().offset();
+      uint64 size = isr_size();
+
+      $assert(isr_size() > 0 && isr_size() < 64);
+      $assert((uint64)core_isr_0 + size*64 == (uint64)core_isr_64);
+
+      // for(uint32 i=0; i < 16; i++) {
+      //   _entries[offset+i] = Entry((void*)interrupt_routines[i]);
+      // }
+
+      for(uint32 i=0; i < 64; i++) {
+        //_entries[offset+i] = Entry((void*)interrupt_routines[i]);
+        _entries[offset+i] = Entry((void*)((uint64)core_isr_0 + size*i));
       }
 
       _idt_desc = IDTDescriptor(_entries, IDT_ENTRY_COUNT * sizeof(Entry) - 1);
@@ -183,44 +226,15 @@ namespace Helvede {
     /*
     * Raw pointer table to ISRs defined in assembler.
     */
+    /*
     typedef void (*ISR_Pointer)();
 
-    ISR_Pointer interrupt_routines[34] = {
+    ISR_Pointer interrupt_routines[46] = {
       core_isr_0,
       core_isr_1,
-      core_isr_2,
-      core_isr_3,
-      core_isr_4,
-      core_isr_5,
-      core_isr_6,
-      core_isr_7,
-      core_isr_8,
-      core_isr_9,
-      core_isr_10,
-      core_isr_11,
-      core_isr_12,
-      core_isr_13,
-      core_isr_14,
-      core_isr_15,
-      core_isr_16,
-      core_isr_17,
-      core_isr_18,
-      core_isr_19,
-      core_isr_20,
-      core_isr_21,
-      core_isr_22,
-      core_isr_23,
-      core_isr_24,
-      core_isr_25,
-      core_isr_26,
-      core_isr_27,
-      core_isr_28,
-      core_isr_29,
-      core_isr_30,
-      core_isr_31,
-      core_isr_32,
-      core_isr_33
+      core_isr_2
     };
+    */
 
   private:
 

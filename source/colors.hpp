@@ -42,11 +42,15 @@ namespace TermColorings {
   static Coloring WhiteOnBlack;
   static Coloring BlackOnWhite;
   static Coloring GreenOnBlack;
+  static Coloring RedOnBlack;
+  static Coloring WhiteOnRed;
 
   constexpr void static_init() {
     WhiteOnBlack = Coloring(VGAColor::White, VGAColor::Black);
     BlackOnWhite = Coloring(VGAColor::Black, VGAColor::White);
     GreenOnBlack = Coloring(VGAColor::Green, VGAColor::Black);
+    RedOnBlack = Coloring(VGAColor::Red, VGAColor::Black);
+    WhiteOnRed = Coloring(VGAColor::White, VGAColor::Red);
   }
 };
 
