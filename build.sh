@@ -8,8 +8,8 @@ echo "--- NASM ---" &&
 nasm -f elf64 source/boot_header.asm -o output/objects/boot_header.o &&
 nasm -f elf64 source/boot_long_mode.asm -o output/objects/boot_long_mode.o &&
 nasm -f elf64 source/boot.asm -o output/objects/boot.o &&
-nasm -f elf64 source/keyboard.asm -o output/objects/keyboard.o &&
+nasm -f elf64 source/interrupts.asm -o output/objects/interrupts.o &&
 echo "--- Linking ---" &&
-ld -n -nostdlib -o output/image/boot/kernel.bin -T source/linker.ld output/objects/boot_header.o output/objects/boot.o output/objects/boot_long_mode.o output/objects/keyboard.o output/objects/kernel.o &&
+ld -n -nostdlib -o output/image/boot/kernel.bin -T source/linker.ld output/objects/boot_header.o output/objects/boot.o output/objects/boot_long_mode.o output/objects/interrupts.o output/objects/kernel.o &&
 cp source/grub.cfg output/image/boot/grub/ &&
 grub-mkrescue -o output/image.iso output/image

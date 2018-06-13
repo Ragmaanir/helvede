@@ -122,6 +122,12 @@ public:
   }
 
   template<class T>
+  void puts(T arg, Coloring coloring) {
+    print(arg, coloring);
+    newline();
+  }
+
+  template<class T>
   void puts(T arg) {
     print(arg);
     newline();

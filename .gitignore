@@ -1,2 +1,4 @@
 output/
 *.sublime-project
+*.sublime-workspace
+qemu.log

@@ -8,3 +8,7 @@
 [ ] Terminal with command line
 [ ] File System
 [ ] Networking
+
+- Try flat GDT setup
+- Helper to print GDT
+- Fix IDT related triple fault caused by General Protection Fault (0xD)

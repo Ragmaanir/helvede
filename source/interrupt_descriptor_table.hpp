@@ -30,40 +30,109 @@
 // }
 
 extern "C" {
-  void keyboard_isr_handler();
   void empty_isr_handler();
-  //void common_isr_handler();
 
   void core_isr_0();
   void core_isr_1();
   void core_isr_64();
-}
 
-extern "C" void keyboard_isr_handler_callback() {
-  VGATerminal t;
-  t.puts("IRQ:YYY");
 }
 
 extern "C" void empty_isr_handler_callback() {
-  VGATerminal t;
+  VGATerminal t(8, 30);
   t.puts("IRQ:empty");
 }
 
-static uint64 invocation_count = 0;
-
-extern "C" void common_isr_handler_callback(uint64 i) {
-  invocation_count += 1;
-  if(i == 1) {
-    VGATerminal t(18,0);
-    t.puts("KEYBOARD");
-  }
-  else {
-    VGATerminal t(16,0);
-    t.puts("IRQ #", i, " count: ", invocation_count);
-  }
-}
-
 namespace Helvede {
+
+  /*
+  0x0000     | 0x00      | Divide by 0
+  0x0004     | 0x01      | Reserved
+  0x0008     | 0x02      | NMI Interrupt
+  0x000C     | 0x03      | Breakpoint (INT3)
+  0x0010     | 0x04      | Overflow (INTO)
+  0x0014     | 0x05      | Bounds range exceeded (BOUND)
+  0x0018     | 0x06      | Invalid opcode (UD2)
+  0x001C     | 0x07      | Device not available (WAIT/FWAIT)
+  0x0020     | 0x08      | Double fault
+  0x0024     | 0x09      | Coprocessor segment overrun
+  0x0028     | 0x0A      | Invalid TSS
+  0x002C     | 0x0B      | Segment not present
+  0x0030     | 0x0C      | Stack-segment fault
+  0x0034     | 0x0D      | General protection fault
+  0x0038     | 0x0E      | Page fault
+  0x003C     | 0x0F      | Reserved
+  0x0040     | 0x10      | x87 FPU error
+  0x0044     | 0x11      | Alignment check
+  0x0048     | 0x12      | Machine check
+  0x004C     | 0x13      | SIMD Floating-Point Exception
+  0x00xx     | 0x14-0x1F | Reserved
+  0x0xxx     | 0x20-0xFF | User definable
+  */
+
+  enum class Interrupt {
+    DivideByZero = 0,
+    NMIInterrupt = 2
+  };
+
+  // char* lower_interrupt_names[14] = {
+  //   {"Divide by zero"},
+  //   {"Reserved"},
+  //   {"NMI Interrupt"},
+  //   {"Breakpoint"},
+  //   {"Overflow"},
+  //   {"Bounds range exceeded"},
+  //   {"Invalid opcode"},
+  //   {"Device not available (WAIT/FWAIT)"},
+  //   {"Double fault"},
+  //   {"Coprocessor segment overrun"},
+  //   {"Invalid TSS"},
+  //   {"Segment not present"},
+  //   {"Stack-segment fault"},
+  //   {"General protection fault"},
+  //   {"Page fault"},
+  //   {"Reserved"},
+  //   {"x87 FPU error"},
+  //   {"Alignment check"},
+  //   {"Machine check"},
+  //   {"SIMD Floating-Point Exception"}
+  // };
+
+  const char* lower_interrupt_names(uint32 i) {
+    switch(i) {
+      case 0: return "Divide by zero";
+      case 1: return "Reserved";
+      case 2: return "NMI Interrupt";
+      case 3: return "Breakpoint";
+      case 4: return "Overflow";
+      case 5: return "Bounds range exceeded";
+      case 6: return "Invalid opcode";
+      case 7: return "Device not available (WAIT/FWAIT)";
+      case 8: return "Double fault";
+      case 9: return "Coprocessor segment overrun";
+      case 10: return "Invalid TSS";
+      case 11: return "Segment not present";
+      case 12: return "Stack-segment fault";
+      case 13: return "General protection fault";
+      case 14: return "Page fault";
+      case 15: return "Reserved";
+      case 16: return "x87 FPU error";
+      case 17: return "Alignment check";
+      case 18: return "Machine check";
+      case 19: return "SIMD Floating-Point Exception";
+      default: return "-- error --";
+    }
+  };
+
+  const char* interrupt_name(uint32 i) {
+    if(i < 0x14) {
+      return lower_interrupt_names(i);
+    } else if (i < 0x20) {
+      return "Reserved";
+    } else {
+      return "User definable";
+    }
+  }
 
   class InterruptDescriptorTable {
   public:
@@ -133,39 +202,15 @@ namespace Helvede {
     }
 
     uint64 isr_size() {
-      return (uint64)core_isr_1 - (uint64)core_isr_0;
+      //return (uint64)core_isr_1 - (uint64)core_isr_0;
+      // FIXME: strangely core_isr_0/1 etc return the same values which makes the size zero ...
+      return 64;
     }
 
     void install() {
-      //VGATerminal t(10, 0);
       VGATerminal t = _t;
 
-      t.puts(" ");
-      t.puts("First: ", _chained_pics.first().offset());
-      t.puts("Second: ", _chained_pics.first().offset());
-
       _chained_pics.remap();
-
-      t.puts("After Remap: ", _chained_pics.first().offset());
-      t.puts("After Remap 2: ", _chained_pics.first().offset());
-
-      t.puts(
-        "PIC offset X: ",
-        _chained_pics.first().offset(),
-        " ",
-        _chained_pics.second().offset()
-      );
-
-      t.puts(
-        "PIC offset Y: ",
-        _chained_pics.first().offset(),
-        " ",
-        _chained_pics.second().offset()
-      );
-
-      // for(uint32 i=0; i < sizeof(interrupt_routines)/sizeof(interrupt_routines[0]); i++) {
-      //   _entries[_chained_pics.first().offset()+i] = Entry((void*)interrupt_routines[i]);
-      // }
 
       // const uint16 PORT = 0x3f8;
       // Port<uint8>(PORT + 1).write(0x00);
@@ -194,18 +239,21 @@ namespace Helvede {
       // outb(PORT + 2, 0xC7);    // Enable FIFO, clear them, with 14-byte threshold
       // outb(PORT + 4, 0x0B);    // IRQs enabled, RTS/DSR set
 
-      uint8 offset = 0; //_chained_pics.first().offset();
+      uint8 offset = _chained_pics.first().offset();
       uint64 size = isr_size();
 
-      $assert(isr_size() > 0 && isr_size() < 64);
+      $assert(size > 0 && size < 64);
       $assert((uint64)core_isr_0 + size*64 == (uint64)core_isr_64);
 
-      // for(uint32 i=0; i < 16; i++) {
-      //   _entries[offset+i] = Entry((void*)interrupt_routines[i]);
-      // }
+      {
+        VGATerminal t(10, 0);
 
-      for(uint32 i=0; i < 64; i++) {
-        //_entries[offset+i] = Entry((void*)interrupt_routines[i]);
+        t.puts(String::to_string((uint64)core_isr_0, 16), TermColorings::WhiteOnRed);
+        t.puts(String::to_string((uint64)core_isr_1, 16), TermColorings::WhiteOnRed);
+        t.puts(String::to_string((uint64)empty_isr_handler, 16), TermColorings::WhiteOnRed);
+      }
+
+      for(uint32 i=0; i < 256; i++) {
         _entries[offset+i] = Entry((void*)((uint64)core_isr_0 + size*i));
       }
 
@@ -244,4 +292,25 @@ namespace Helvede {
     VGATerminal& _t;
   };
 
+}
+
+static uint64 invocation_count = 0;
+
+extern "C" void common_isr_handler_callback(uint64 i) {
+  invocation_count += 1;
+  if(i == 1) {
+    VGATerminal t(18,20);
+    t.puts("KEYBOARD");
+  }
+  else {
+    VGATerminal t(16,20);
+    t.puts("IRQ #", i, "(", Helvede::interrupt_name(i), ")" " count: ", invocation_count);
+    //t.puts("IRQ #", i, "(", Helvede::interrupt_name(i), ")");
+    // t.puts("1234");
+  }
+
+  // VGATerminal t(16,0);
+  // const char* c = "f";
+  // if(i == 8) { c = "t"; }
+  // t.puts(c);
 }

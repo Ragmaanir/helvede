@@ -1,4 +1,5 @@
 global helvede_kernel_boot
+global helvede_kernel_stack_top
 global helvede_kernel_heap_start
 
 extern helvede_kernel_long_mode
@@ -20,10 +21,10 @@ helvede_kernel_boot:
   mov ss, ax  ; stack selector
   mov ds, ax  ; data selector
   mov es, ax  ; extra selector
+  mov gs, ax
+  mov fs, ax
 
-  mov edi, helvede_kernel_heap_start
   jmp gdt64.code:helvede_kernel_long_mode
-  jmp permanent_halt
 
 print:
   mov dword [0xb8000], eax
@@ -154,17 +155,44 @@ initialize_vesa_custom:
 section .data
   ;text_hello dd 0x2f4b2f4f
   text_done db 'X', 0x2f, 'X', 0x2f
+  text_halt db 'H', 0x0e, 'a', 0x0e, 'l', 0x0e, 't', 0x0e
 
-section .rodata
+; section .rodata
+; gdt64:
+;   dq 0 ; zero entry
+; .code: equ $ - gdt64
+;   dq (1<<44) | (1<<47) | (1<<41) | (1<<43) | (1<<53) ; code segment
+; .data: equ $ - gdt64
+;   dq (1<<44) | (1<<47) | (1<<41) ; data segment
+; .pointer:
+;   dw $ - gdt64 - 1
+;   dq gdt64
+
 gdt64:
-  dq 0 ; zero entry
-.code: equ $ - gdt64 ; new
-  dq (1<<44) | (1<<47) | (1<<41) | (1<<43) | (1<<53) ; code segment
-.data: equ $ - gdt64 ; new
-  dq (1<<44) | (1<<47) | (1<<41) ; data segment
-.pointer:
-  dw $ - gdt64 - 1
-  dq gdt64
+  .null: equ $ - gdt64         ; The null descriptor
+  dw 0xFFFF                    ; Limit (low)
+  dw 0                         ; Base (low)
+  db 0                         ; Base (middle)
+  db 0                         ; Access
+  db 1                         ; Granularity
+  db 0                         ; Base (high)
+  .code: equ $ - gdt64         ; The code descriptor
+  dw 0                         ; Limit (low)
+  dw 0                         ; Base (low)
+  db 0                         ; Base (middle)
+  db 10011010b                 ; Access (exec/read)
+  db 10101111b                 ; Granularity, 64 bits flag, limit19:16
+  db 0                         ; Base (high)
+  .data: equ $ - gdt64         ; The data descriptor
+  dw 0                         ; Limit (low)
+  dw 0                         ; Base (low)
+  db 0                         ; Base (middle)
+  db 10010010b                 ; Access (read/write)
+  db 00000000b                 ; Granularity
+  db 0                         ; Base (high)
+  .pointer:                    ; The GDT-pointer
+  dw $ - gdt64 - 1             ; Limit
+  dq gdt64                     ; Base
 
 section .bss
 align 4096
@@ -174,8 +202,8 @@ p3_table:
   resb 4096
 p2_table:
   resb 4096
-stack_bottom:
-  align 4
+helvede_kernel_stack_bottom:
+  align 16
   resb 16384
-stack_top:
+helvede_kernel_stack_top:
 helvede_kernel_heap_start:

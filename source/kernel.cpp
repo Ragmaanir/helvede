@@ -3,6 +3,8 @@
 #include "types.hpp"
 #include "math.hpp"
 #include "numbers.hpp"
+#include "ascii.hpp"
+#include "dbg.hpp"
 #include "static_array.hpp"
 #include "allocator.hpp"
 #include "kiss_allocator.hpp"
@@ -62,8 +64,30 @@ namespace Helvede {
 
   // }
 
+  void crashme() {
+    auto s = String::to_string(1);
+
+    Dbg::put(10, 8, Ascii::decimal_to_code(s.length()), 0x1f);
+
+    for(uint32 i = 0; i < s.length(); i++) {
+      Dbg::put(10 + i, 4, s.at(i), 0x1f);
+      Dbg::put(10 + i, 5, s.at(i), 0x2f);
+    }
+
+    Dbg::put(0, 10, '1', 0x2f);
+
+    VGATerminal t = VGATerminal();
+    t.puts("AAA");
+    t.puts("BBB");
+
+    Dbg::put(0, 11, '2', 0x2f);
+  }
+
+
   void main(Pointer64 heap_start) {
     TermColorings::static_init();
+
+    //crashme();
 
     //allocator = instantiate((void*)0xf000, KISSAllocator(heap, 32));
     VGATerminal t = VGATerminal();
@@ -81,7 +105,8 @@ namespace Helvede {
     t.puts(idstr);
     t.print("Endianness: ");
     t.puts(Platform::endianness_name());
-    t.puts(String::to_string(heap_start));
+    t.print("Heap: 0x");
+    t.puts(String::to_string(heap_start, 16));
 
     // allocator = KISSAllocator::newEmbeddedIn(heap_start, 1024);
     // //allocator = new((void*)heap_start)KISSAllocator((void*)(heap_start + sizeof(KISSAllocator)), 32);
@@ -95,24 +120,24 @@ namespace Helvede {
     tests.run();
 
     InterruptDescriptorTable idt(t);
-    idt.install();
+    idt.install(); // CAUSES TRIPLE FAULT AT END
 
     t.puts("--- SUCCESS ---");
 
-    uint64 s = 0;
-
-    t.newline();
-    char* cs = "-\\|/";
+    //t.newline();
 
     const uint32 max = 10000000;
     for(uint32 i=0; i < max; i++) {
-      s += 1;
-
-      VGATerminal t2(16, 30);
-      t2.print(100 * i / max, "%");
+      const uint32 v = 100 * i / max;
+      VGATerminal t2(14, 30);
+      // if(v < 10) {
+      //   t2.print(" ");
+      // }
+      t2.print(v, "%");
     }
 
-    t.puts("--- DONE ---", s);
+    // VGATerminal t2(14, 30);
+    // t2.print(3000000*100 / max, "%");
   }
 }
 
