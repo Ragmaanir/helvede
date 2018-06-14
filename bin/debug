@@ -1,0 +1,26 @@
+#!/bin/bash
+#./build_docker.sh
+./build.sh
+
+qemu-system-x86_64 -hda output/image.iso -s -serial file:stdio -D qemu.log -d int,cpu_reset -no-reboot -no-shutdown &
+
+# required so that gdb connects *after*
+# kernel changed to long-mode and is stuck in
+# wait_for_gdb-loop in order to prevent
+# "g packet reply is too long" which according to
+# https://stackoverflow.com/questions/8662468/remote-g-packet-reply-is-too-long
+# is caused by a change in the instruction set
+# triggered by changing to long-mode.
+sleep 1
+
+# -ex "symbol-file output/objects/kernel.o" \
+# -ex "break helvede_kernel_main"
+# -ex "set arch i386:x86-64" \
+
+# gdb \
+#   -ex "symbol-file output/image/boot/kernel.bin" \
+#   -ex "set arch i386:x86-64" \
+#   -ex "break gdb_synchronization_breakpoint\\ncommands\\nset $rax = 1\\ncontinue\\nend" \
+#   -ex "target remote localhost:1234"
+
+gdb -x gdb_commands

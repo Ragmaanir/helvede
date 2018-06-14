@@ -34,6 +34,25 @@ extern "C" {
 
   void core_isr_0();
   void core_isr_1();
+  void core_isr_2();
+  void core_isr_3();
+  void core_isr_4();
+  void core_isr_5();
+  void core_isr_6();
+  void core_isr_7();
+  void core_isr_8();
+  void core_isr_9();
+  void core_isr_10();
+  void core_isr_11();
+  void core_isr_12();
+  void core_isr_13();
+  void core_isr_14();
+  void core_isr_15();
+  void core_isr_16();
+  void core_isr_17();
+  void core_isr_18();
+  void core_isr_19();
+  void core_isr_20();
   void core_isr_64();
 
 }
@@ -253,9 +272,24 @@ namespace Helvede {
         t.puts(String::to_string((uint64)empty_isr_handler, 16), TermColorings::WhiteOnRed);
       }
 
+      /*
       for(uint32 i=0; i < 256; i++) {
         _entries[offset+i] = Entry((void*)((uint64)core_isr_0 + size*i));
       }
+      */
+
+      _entries[offset+0] = Entry((void*)((uint64)core_isr_0));
+      _entries[offset+1] = Entry((void*)((uint64)core_isr_1));
+      _entries[offset+2] = Entry((void*)((uint64)core_isr_2));
+      _entries[offset+3] = Entry((void*)((uint64)core_isr_3));
+      _entries[offset+4] = Entry((void*)((uint64)core_isr_4));
+      _entries[offset+5] = Entry((void*)((uint64)core_isr_5));
+      _entries[offset+6] = Entry((void*)((uint64)core_isr_6));
+      _entries[offset+7] = Entry((void*)((uint64)core_isr_7));
+      _entries[offset+8] = Entry((void*)((uint64)core_isr_8));
+      _entries[offset+9] = Entry((void*)((uint64)core_isr_9));
+      _entries[offset+10] = Entry((void*)((uint64)core_isr_10));
+      _entries[offset+11] = Entry((void*)((uint64)core_isr_11));
 
       _idt_desc = IDTDescriptor(_entries, IDT_ENTRY_COUNT * sizeof(Entry) - 1);
 
@@ -294,23 +328,27 @@ namespace Helvede {
 
 }
 
+// extern "C" __attribute__((noinline)) void non_inline() {
+//   ((uint16*)0xB8000)[10 + 10 * 80] = 0x2f4b2f4f;
+// }
+
 static uint64 invocation_count = 0;
 
 extern "C" void common_isr_handler_callback(uint64 i) {
   invocation_count += 1;
-  if(i == 1) {
-    VGATerminal t(18,20);
-    t.puts("KEYBOARD");
-  }
-  else {
-    VGATerminal t(16,20);
-    t.puts("IRQ #", i, "(", Helvede::interrupt_name(i), ")" " count: ", invocation_count);
-    //t.puts("IRQ #", i, "(", Helvede::interrupt_name(i), ")");
-    // t.puts("1234");
-  }
+  // if(i == 1) {
+  //   VGATerminal t(18,20);
+  //   t.puts("KEYBOARD");
+  // } else {
+  //   VGATerminal t(16,20);
+  //   t.puts("IRQ #", i, "(", Helvede::interrupt_name(i), ")" " count: ", invocation_count);
+  //   //t.puts("IRQ #", i, "(", Helvede::interrupt_name(i), ")" " count: ", Helvede::String::to_string(invocation_count));
+  //   //t.puts("IRQ #", i, "(", Helvede::interrupt_name(i), ")");
+  //   // t.puts("1234");
+  // }
 
-  // VGATerminal t(16,0);
-  // const char* c = "f";
-  // if(i == 8) { c = "t"; }
-  // t.puts(c);
+  // Helvede::Dbg::put(i, 22, Helvede::Ascii::decimal_to_code((uint8)i), 0x3f);
+
+  VGATerminal t(16,20);
+  t.puts("IRQ #", i, "(", Helvede::interrupt_name(i), "), count: ", Helvede::String::to_string(invocation_count));
 }

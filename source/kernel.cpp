@@ -64,24 +64,24 @@ namespace Helvede {
 
   // }
 
-  void crashme() {
-    auto s = String::to_string(1);
+  // void crashme() {
+  //   auto s = String::to_string(1);
 
-    Dbg::put(10, 8, Ascii::decimal_to_code(s.length()), 0x1f);
+  //   Dbg::put(10, 8, Ascii::decimal_to_code(s.length()), 0x1f);
 
-    for(uint32 i = 0; i < s.length(); i++) {
-      Dbg::put(10 + i, 4, s.at(i), 0x1f);
-      Dbg::put(10 + i, 5, s.at(i), 0x2f);
-    }
+  //   for(uint32 i = 0; i < s.length(); i++) {
+  //     Dbg::put(10 + i, 4, s.at(i), 0x1f);
+  //     Dbg::put(10 + i, 5, s.at(i), 0x2f);
+  //   }
 
-    Dbg::put(0, 10, '1', 0x2f);
+  //   Dbg::put(0, 10, '1', 0x2f);
 
-    VGATerminal t = VGATerminal();
-    t.puts("AAA");
-    t.puts("BBB");
+  //   VGATerminal t = VGATerminal();
+  //   t.puts("AAA");
+  //   t.puts("BBB");
 
-    Dbg::put(0, 11, '2', 0x2f);
-  }
+  //   Dbg::put(0, 11, '2', 0x2f);
+  // }
 
 
   void main(Pointer64 heap_start) {
@@ -120,21 +120,25 @@ namespace Helvede {
     tests.run();
 
     InterruptDescriptorTable idt(t);
-    idt.install(); // CAUSES TRIPLE FAULT AT END
+    idt.install();
+
+    Dbg::breakpoint();
 
     t.puts("--- SUCCESS ---");
 
+    asm("int 2\n");
+
     //t.newline();
 
-    const uint32 max = 10000000;
-    for(uint32 i=0; i < max; i++) {
-      const uint32 v = 100 * i / max;
-      VGATerminal t2(14, 30);
-      // if(v < 10) {
-      //   t2.print(" ");
-      // }
-      t2.print(v, "%");
-    }
+    // const uint32 max = 10000000;
+    // for(uint32 i=0; i < max; i++) {
+    //   const uint32 v = 100 * i / max;
+    //   VGATerminal t2(14, 30);
+    //   // if(v < 10) {
+    //   //   t2.print(" ");
+    //   // }
+    //   t2.print(v, "%");
+    // }
 
     // VGATerminal t2(14, 30);
     // t2.print(3000000*100 / max, "%");

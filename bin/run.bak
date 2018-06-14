@@ -1,2 +1,3 @@
+#!/bin/bash
 ./build.sh
 sudo qemu-system-x86_64 -hda output/image.iso -clock unix -serial stdio -usb -device usb-host,hostbus=3,hostaddr=2

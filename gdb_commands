@@ -1,0 +1,14 @@
+symbol-file output/image/boot/kernel.bin
+set arch i386:x86-64
+set pagination off
+
+break gdb_synchronization
+commands
+set $rax = 1
+continue
+end
+
+break gdb_breakpoint
+
+target remote localhost:1234
+continue

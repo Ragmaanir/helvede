@@ -1,6 +1,8 @@
 extern empty_isr_handler_callback
 extern common_isr_handler_callback
 
+extern gdb_breakpoint
+
 global empty_isr_handler
 global common_isr_handler
 
@@ -35,14 +37,20 @@ global common_isr_handler
     xchg bx, bx
     cli
     isr_push_registers
-    call empty_isr_handler_callback
-    mov rax, [str_zero]
-    mov rdi, 0x2f002f002f002f00
-    or rax, rdi
-    add rax, %1
-    mov qword [0xb8000 + 64], rax
+    ; ;
+    ; mov rax, [str_zero]
+    ; mov rdi, 0x5f005f005f005f00
+    ; or rax, rdi
+    ; add rax, %1
+    ; mov qword [0xb8000 + 140], rax
+    ; ;
+
+    ;mov rdi, %1
+    ;call print_isr_number
+
     mov rdi, %1
     call common_isr_handler_callback
+
     isr_pop_registers
     sti
     iretq
@@ -73,9 +81,28 @@ empty_isr_handler:
   sti
   iretq
 
+print_isr_number:
+  mov ax, di
+  or ax, 0x6f00
+  mov word [0xb8000 + 140], ax
+  ret
+
+; print_isr_number:
+;   mov cx, di
+;   add cx, 48
+;   or cx, 0x2f00
+;   mov word [0xb8000 + 130], cx
+
+;   mov rax, 0x6f006f006f006f00
+;   shl rdi, 48
+;   or rax, rdi
+;   mov qword [0xb8000 + 140], rax
+;   ret
+
 section .data
   ;str_empty db 'E', 0x0e, 'm', 0x0e, 't', 0x0e, 'y', 0x0e
   str_OK dd 0x2f, 0x4b, 0x2f, 0x4f
   ;str_zero dq 0x2f, 0x30, 0x2f, 0x30, 0x2f, 0x30, 0x2f, 0x30
   ;str_zero dq 0x30, 0x2f, 0x30, 0x2f, 0x30, 0x2f, 0x30, 0x2f
   str_zero dq '0', 0x2f, '0', 0x2f, '0', 0x2f, '0', 0x2f
+  zero dq 0
