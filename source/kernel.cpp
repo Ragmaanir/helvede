@@ -1,5 +1,7 @@
 #include <new>
 
+#include "macros/repeat.hpp"
+
 #include "types.hpp"
 #include "math.hpp"
 #include "numbers.hpp"

@@ -1,62 +1,11 @@
 #include "table_descriptor.hpp"
 
-#define $$concat(a, ...) $$concat_f(a, __VA_ARGS__)
-#define $$concat_f(a, ...) a ## __VA_ARGS__
-// #define $$empty(...)
-// #define $repeat_f() $repeat
-// #define $repeat(n, exp) exp && $$eval($repeat_f)()(n-1, exp)
-// #define $$eval(...) __VA_ARGS__ $$empty()
-// #define $$eval_f(f, args) (f ## args) $$empty()
-
-#define $repeat(n, exp) $repeat_##n(exp)
-#define $repeat_1(exp) exp;
-#define $repeat_2(exp) exp; $repeat_1(exp)
-#define $repeat_3(exp) exp; $repeat_2(exp)
-#define $repeat_4(exp) exp; $repeat_3(exp)
-#define $repeat_5(exp) exp; $repeat_4(exp)
-#define $repeat_6(exp) exp; $repeat_5(exp)
-#define $repeat_7(exp) exp; $repeat_6(exp)
-#define $repeat_8(exp) exp; $repeat_7(exp)
-#define $repeat_9(exp) exp; $repeat_8(exp)
-#define $repeat_10(exp) exp; $repeat_9(exp)
-#define $repeat_11(exp) exp; $repeat_10(exp)
-
-//#define $rep(n, exp) (n==1) ? exp : $rep_r(n, exp)
-//#define $rep_r(n, exp) $rep(n-1, exp)
-//#define $$delay(name, ...) (($ ## name))(__VA_ARGS__)
-
-// void macros() {
-//   int i = 0;
-//   $repeat(4, (i += 1));
-// }
-
 extern "C" {
   void empty_isr_handler();
-
-  void core_isr_0();
-  void core_isr_1();
-  void core_isr_2();
-  void core_isr_3();
-  void core_isr_4();
-  void core_isr_5();
-  void core_isr_6();
-  void core_isr_7();
-  void core_isr_8();
-  void core_isr_9();
-  void core_isr_10();
-  void core_isr_11();
-  void core_isr_12();
-  void core_isr_13();
-  void core_isr_14();
-  void core_isr_15();
-  void core_isr_16();
-  void core_isr_17();
-  void core_isr_18();
-  void core_isr_19();
-  void core_isr_20();
-  void core_isr_64();
-
 }
+
+// Defined in assembly file
+extern "C" uint64 isr_pointer_table[];
 
 extern "C" void empty_isr_handler_callback() {
   VGATerminal t(8, 30);
@@ -95,52 +44,34 @@ namespace Helvede {
     NMIInterrupt = 2
   };
 
-  // char* lower_interrupt_names[14] = {
-  //   {"Divide by zero"},
-  //   {"Reserved"},
-  //   {"NMI Interrupt"},
-  //   {"Breakpoint"},
-  //   {"Overflow"},
-  //   {"Bounds range exceeded"},
-  //   {"Invalid opcode"},
-  //   {"Device not available (WAIT/FWAIT)"},
-  //   {"Double fault"},
-  //   {"Coprocessor segment overrun"},
-  //   {"Invalid TSS"},
-  //   {"Segment not present"},
-  //   {"Stack-segment fault"},
-  //   {"General protection fault"},
-  //   {"Page fault"},
-  //   {"Reserved"},
-  //   {"x87 FPU error"},
-  //   {"Alignment check"},
-  //   {"Machine check"},
-  //   {"SIMD Floating-Point Exception"}
-  // };
+  static const char* const lower_interrupt_name_table[] = {
+    "Divide by zero",
+    "Reserved",
+    "NMI Interrupt",
+    "Breakpoint",
+    "Overflow",
+    "Bounds range exceeded",
+    "Invalid opcode",
+    "Device not available (WAIT/FWAIT)",
+    "Double fault",
+    "Coprocessor segment overrun",
+    "Invalid TSS",
+    "Segment not present",
+    "Stack-segment fault",
+    "General protection fault",
+    "Page fault",
+    "Reserved",
+    "x87 FPU error",
+    "Alignment check",
+    "Machine check",
+    "SIMD Floating-Point Exception"
+  };
 
-  const char* lower_interrupt_names(uint32 i) {
-    switch(i) {
-      case 0: return "Divide by zero";
-      case 1: return "Reserved";
-      case 2: return "NMI Interrupt";
-      case 3: return "Breakpoint";
-      case 4: return "Overflow";
-      case 5: return "Bounds range exceeded";
-      case 6: return "Invalid opcode";
-      case 7: return "Device not available (WAIT/FWAIT)";
-      case 8: return "Double fault";
-      case 9: return "Coprocessor segment overrun";
-      case 10: return "Invalid TSS";
-      case 11: return "Segment not present";
-      case 12: return "Stack-segment fault";
-      case 13: return "General protection fault";
-      case 14: return "Page fault";
-      case 15: return "Reserved";
-      case 16: return "x87 FPU error";
-      case 17: return "Alignment check";
-      case 18: return "Machine check";
-      case 19: return "SIMD Floating-Point Exception";
-      default: return "-- error --";
+  const char* const lower_interrupt_names(uint32 i) {
+    if(i < 20) {
+      return lower_interrupt_name_table[i];
+    } else {
+      return "No name for interrupt defined";
     }
   };
 
@@ -206,19 +137,10 @@ namespace Helvede {
 
       //uint8 offset = _chained_pics.first().offset();
 
-      _entries[0] = Entry((void*)((uint64)core_isr_0));
-      _entries[1] = Entry((void*)((uint64)core_isr_1));
-      _entries[2] = Entry((void*)((uint64)core_isr_2));
-      _entries[3] = Entry((void*)((uint64)core_isr_3));
-      _entries[4] = Entry((void*)((uint64)core_isr_4));
-      _entries[5] = Entry((void*)((uint64)core_isr_5));
-      _entries[6] = Entry((void*)((uint64)core_isr_6));
-      _entries[7] = Entry((void*)((uint64)core_isr_7));
-      _entries[8] = Entry((void*)((uint64)core_isr_8));
-      _entries[9] = Entry((void*)((uint64)core_isr_9));
-      _entries[10] = Entry((void*)((uint64)core_isr_10));
-      _entries[11] = Entry((void*)((uint64)core_isr_11));
-      _entries[12] = Entry((void*)((uint64)core_isr_12));
+      for(uint32 i = 0; i < 256; i++) {
+        _entries[i] = Entry((void*)isr_pointer_table[i]);
+      }
+
 
       _idt_desc = TableDescriptor(_entries, IDT_ENTRY_COUNT * sizeof(Entry));
 
@@ -234,19 +156,6 @@ namespace Helvede {
       _chained_pics.first().write_data(0);
     }
 
-    /*
-    * Raw pointer table to ISRs defined in assembler.
-    */
-    /*
-    typedef void (*ISR_Pointer)();
-
-    ISR_Pointer interrupt_routines[46] = {
-      core_isr_0,
-      core_isr_1,
-      core_isr_2
-    };
-    */
-
   private:
 
     Entry _entries[IDT_ENTRY_COUNT];
@@ -257,9 +166,6 @@ namespace Helvede {
 
 }
 
-// extern "C" __attribute__((noinline)) void non_inline() {
-//   ((uint16*)0xB8000)[10 + 10 * 80] = 0x2f4b2f4f;
-// }
 
 static uint64 invocation_count = 0;
 
