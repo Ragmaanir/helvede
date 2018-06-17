@@ -94,7 +94,7 @@ namespace Helvede {
 
       $assert_equal(d.structured.base, 0b11110000111100001111000011110000);
       $assert_equal(d.structured.limit, 0b1111111111111110);
-      $assert_equal(*(uint64*)d.data, 0b111100001111000011110000111100001111111111111110);
+      $assert_equal(*(uint64*)d.data, 0xf0f0f0f0f0f0fffe);
     }
 
     void test_ports() {

@@ -6,7 +6,7 @@
 -fno-rtti
 -fno-stack-protector
 -fno-builtin
--msse3
+-mno-sse
 -mstackrealign
 -Wno-unused-parameter
 -mno-red-zone
