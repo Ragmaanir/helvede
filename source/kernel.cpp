@@ -122,13 +122,14 @@ namespace Helvede {
     InterruptDescriptorTable idt(t);
     idt.install();
 
-    Dbg::breakpoint();
 
     t.puts("--- SUCCESS ---");
 
-    asm("int 2\n");
+    // asm("int 2\n");
 
-    //t.newline();
+    // uint32 x = 1 / (String::to_string(0).length() - 1);
+
+    // t.print(String::to_string(x));
 
     // const uint32 max = 10000000;
     // for(uint32 i=0; i < max; i++) {
@@ -139,9 +140,6 @@ namespace Helvede {
     //   // }
     //   t2.print(v, "%");
     // }
-
-    // VGATerminal t2(14, 30);
-    // t2.print(3000000*100 / max, "%");
   }
 }
 

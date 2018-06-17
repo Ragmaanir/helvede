@@ -190,27 +190,32 @@ namespace Helvede {
 
     static_assert(sizeof(Entry) == 16, "Entry size");
 
-    union IDTDescriptor {
-      uint8 data[16];
+    // Can be used as GDT and IDT descriptor
+    union TableDescriptor {
+      uint8 data[6];
 
       struct Structured {
         uint16 limit;
-        uint64 base;
+        uint32 base;
       } __attribute__((packed)) structured;
 
-      IDTDescriptor() {
-        IDTDescriptor(0,0);
+      TableDescriptor() {
+        TableDescriptor(0,0);
       }
 
-      IDTDescriptor(Entry *base, uint16 limit) {
-        uint64 address = (uint64)base;
+      TableDescriptor(Entry *base, uint32 limit) {
+        // FIXME: raise if limit > 0xffff
+        uint32 address = (uint32)((uint64)base);
 
-        structured.limit = limit;
+        structured.limit = limit - 1;
         structured.base = address;
       }
     };
 
-    static_assert(sizeof(IDTDescriptor) == 16, "IDTDescriptor size");
+    using IDTDescriptor = TableDescriptor;
+
+    static_assert(sizeof(IDTDescriptor) == 6, "IDTDescriptor size");
+    static_assert(sizeof(IDTDescriptor::Structured) == 6, "IDTDescriptor structure size");
 
     InterruptDescriptorTable(VGATerminal& t) : _chained_pics(0x20, 0x28), _t(t) {
       t.puts(
@@ -220,78 +225,28 @@ namespace Helvede {
       );
     }
 
-    uint64 isr_size() {
-      //return (uint64)core_isr_1 - (uint64)core_isr_0;
-      // FIXME: strangely core_isr_0/1 etc return the same values which makes the size zero ...
-      return 64;
-    }
-
     void install() {
       VGATerminal t = _t;
 
       _chained_pics.remap();
 
-      // const uint16 PORT = 0x3f8;
-      // Port<uint8>(PORT + 1).write(0x00);
-      // Port<uint8>(PORT + 3).write(0x80);
-      // Port<uint8>(PORT + 0).write(0x03);
-      // Port<uint8>(PORT + 1).write(0x00);
-      // Port<uint8>(PORT + 3).write(0x03);
-      // Port<uint8>(PORT + 2).write(0xC7);
-      // Port<uint8>(PORT + 4).write(0x0B);
+      //uint8 offset = _chained_pics.first().offset();
 
-      // while (Port<uint8>(PORT + 5).read() & 0x20 == 0);
+      _entries[0] = Entry((void*)((uint64)core_isr_0));
+      _entries[1] = Entry((void*)((uint64)core_isr_1));
+      _entries[2] = Entry((void*)((uint64)core_isr_2));
+      _entries[3] = Entry((void*)((uint64)core_isr_3));
+      _entries[4] = Entry((void*)((uint64)core_isr_4));
+      _entries[5] = Entry((void*)((uint64)core_isr_5));
+      _entries[6] = Entry((void*)((uint64)core_isr_6));
+      _entries[7] = Entry((void*)((uint64)core_isr_7));
+      _entries[8] = Entry((void*)((uint64)core_isr_8));
+      _entries[9] = Entry((void*)((uint64)core_isr_9));
+      _entries[10] = Entry((void*)((uint64)core_isr_10));
+      _entries[11] = Entry((void*)((uint64)core_isr_11));
+      _entries[12] = Entry((void*)((uint64)core_isr_12));
 
-      // Port<uint8>(PORT).write(0x45);
-      // Port<uint8>(PORT).write(0x34);
-      // Port<uint8>(PORT).write(0x88);
-
-      // for(int i=0; i< 10000; i++) {
-      //   Port<uint8>(PORT).write(i);
-      // }
-
-      // outb(PORT + 1, 0x00);    // Disable all interrupts
-      // outb(PORT + 3, 0x80);    // Enable DLAB (set baud rate divisor)
-      // outb(PORT + 0, 0x03);    // Set divisor to 3 (lo byte) 38400 baud
-      // outb(PORT + 1, 0x00);    //                  (hi byte)
-      // outb(PORT + 3, 0x03);    // 8 bits, no parity, one stop bit
-      // outb(PORT + 2, 0xC7);    // Enable FIFO, clear them, with 14-byte threshold
-      // outb(PORT + 4, 0x0B);    // IRQs enabled, RTS/DSR set
-
-      uint8 offset = _chained_pics.first().offset();
-      uint64 size = isr_size();
-
-      $assert(size > 0 && size < 64);
-      $assert((uint64)core_isr_0 + size*64 == (uint64)core_isr_64);
-
-      {
-        VGATerminal t(10, 0);
-
-        t.puts(String::to_string((uint64)core_isr_0, 16), TermColorings::WhiteOnRed);
-        t.puts(String::to_string((uint64)core_isr_1, 16), TermColorings::WhiteOnRed);
-        t.puts(String::to_string((uint64)empty_isr_handler, 16), TermColorings::WhiteOnRed);
-      }
-
-      /*
-      for(uint32 i=0; i < 256; i++) {
-        _entries[offset+i] = Entry((void*)((uint64)core_isr_0 + size*i));
-      }
-      */
-
-      _entries[offset+0] = Entry((void*)((uint64)core_isr_0));
-      _entries[offset+1] = Entry((void*)((uint64)core_isr_1));
-      _entries[offset+2] = Entry((void*)((uint64)core_isr_2));
-      _entries[offset+3] = Entry((void*)((uint64)core_isr_3));
-      _entries[offset+4] = Entry((void*)((uint64)core_isr_4));
-      _entries[offset+5] = Entry((void*)((uint64)core_isr_5));
-      _entries[offset+6] = Entry((void*)((uint64)core_isr_6));
-      _entries[offset+7] = Entry((void*)((uint64)core_isr_7));
-      _entries[offset+8] = Entry((void*)((uint64)core_isr_8));
-      _entries[offset+9] = Entry((void*)((uint64)core_isr_9));
-      _entries[offset+10] = Entry((void*)((uint64)core_isr_10));
-      _entries[offset+11] = Entry((void*)((uint64)core_isr_11));
-
-      _idt_desc = IDTDescriptor(_entries, IDT_ENTRY_COUNT * sizeof(Entry) - 1);
+      _idt_desc = IDTDescriptor(_entries, IDT_ENTRY_COUNT * sizeof(Entry));
 
       asm(
         "mov rax, %0\n"
@@ -347,7 +302,7 @@ extern "C" void common_isr_handler_callback(uint64 i) {
   //   // t.puts("1234");
   // }
 
-  // Helvede::Dbg::put(i, 22, Helvede::Ascii::decimal_to_code((uint8)i), 0x3f);
+  Helvede::Dbg::put(i, 17, Helvede::Ascii::decimal_to_code((uint8)i), 0x3f);
 
   VGATerminal t(16,20);
   t.puts("IRQ #", i, "(", Helvede::interrupt_name(i), "), count: ", Helvede::String::to_string(invocation_count));

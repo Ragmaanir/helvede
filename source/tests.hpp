@@ -17,7 +17,7 @@ namespace Helvede {
         // terminal.print(String::to_string((int8)right), VGATerminal::VGAColor::Gray, VGATerminal::VGAColor::Black);
         terminal.puts(String::to_string(left), VGAColor::Gray, VGAColor::Black);
         terminal.puts(String::to_string(right), VGAColor::Gray, VGAColor::Black);
-        //terminal.puts(msg, VGATerminal::VGAColor::Gray, VGATerminal::VGAColor::Black);
+        terminal.puts(msg, VGAColor::Gray, VGAColor::Black);
       }
     }
 
@@ -89,25 +89,12 @@ namespace Helvede {
 
     void test_idt() {
       InterruptDescriptorTable::Entry *ptr = (InterruptDescriptorTable::Entry*)0xf0f0f0f0f0f0f0f0;
-      // InterruptDescriptorTable::IDTDescriptor d = InterruptDescriptorTable::IDTDescriptor(ptr, 0x1010);
-
-      // $assert_equal(String::to_string(d.upper, 2), Letters("1000000010000111100001111000011110000111100001111000011110000"));
-      // $assert_equal(String::to_string(d.lower, 2), Letters("1111000011110000000000000000000000000000000000000000000000000000"));
 
       InterruptDescriptorTable::IDTDescriptor d = InterruptDescriptorTable::IDTDescriptor(ptr, 0xffff);
-      // $assert_equal(String::to_string(d.data[0], 2), Letters("1111111111111111111100001111000011110000111100001111000011110000"));
-      // $assert_equal(String::to_string(d.data[1], 2), Letters("1111000011110000000000000000000000000000000000000000000000000000"));
-      // $assert_equal(String::to_string(*((uint64*)d.data), 2), Letters("1111111111111111111100001111000011110000111100001111000011110000"));
-      // $assert_equal(String::to_string(*((uint64*)d.data), 2), Letters("1111000011110000000000000000000000000000000000000000000000000000"));
 
-      uint64 val1 = 0b1111000011110000111100001111000011110000111100001111111111111111;
-      uint64 val2 = 0b1111000011110000;
-
-      $assert_equal(((uint64*)d.data)[0], val1);
-      $assert_equal(((uint64*)d.data)[1], val2);
-
-      // terminal.puts(String::to_string(((uint64*)d.data)[0], 2));
-      // terminal.puts(String::to_string(((uint64*)d.data)[1], 2));
+      $assert_equal(d.structured.base, 0b11110000111100001111000011110000);
+      $assert_equal(d.structured.limit, 0b1111111111111110);
+      $assert_equal(*(uint64*)d.data, 0b111100001111000011110000111100001111111111111110);
     }
 
     void test_ports() {

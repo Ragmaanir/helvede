@@ -1,0 +1,14 @@
+-ggdb
+-ffreestanding
+-Wall
+-Wextra
+-fno-exceptions
+-fno-rtti
+-fno-stack-protector
+-fno-builtin
+-msse3
+-mstackrealign
+-Wno-unused-parameter
+-mno-red-zone
+-std=c++1y
+-masm=intel

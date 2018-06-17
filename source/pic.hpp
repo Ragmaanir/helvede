@@ -48,6 +48,35 @@ namespace Helvede {
       _pics[0].end_interrupt();
     }
 
+    /*
+      const uint16 PORT = 0x3f8;
+      Port<uint8>(PORT + 1).write(0x00);
+      Port<uint8>(PORT + 3).write(0x80);
+      Port<uint8>(PORT + 0).write(0x03);
+      Port<uint8>(PORT + 1).write(0x00);
+      Port<uint8>(PORT + 3).write(0x03);
+      Port<uint8>(PORT + 2).write(0xC7);
+      Port<uint8>(PORT + 4).write(0x0B);
+
+      while (Port<uint8>(PORT + 5).read() & 0x20 == 0);
+
+      Port<uint8>(PORT).write(0x45);
+      Port<uint8>(PORT).write(0x34);
+      Port<uint8>(PORT).write(0x88);
+
+      for(int i=0; i< 10000; i++) {
+        Port<uint8>(PORT).write(i);
+      }
+
+      outb(PORT + 1, 0x00);    // Disable all interrupts
+      outb(PORT + 3, 0x80);    // Enable DLAB (set baud rate divisor)
+      outb(PORT + 0, 0x03);    // Set divisor to 3 (lo byte) 38400 baud
+      outb(PORT + 1, 0x00);    //                  (hi byte)
+      outb(PORT + 3, 0x03);    // 8 bits, no parity, one stop bit
+      outb(PORT + 2, 0xC7);    // Enable FIFO, clear them, with 14-byte threshold
+      outb(PORT + 4, 0x0B);    // IRQs enabled, RTS/DSR set
+    */
+
     void remap() {
       uint8 mask1, mask2;
 
