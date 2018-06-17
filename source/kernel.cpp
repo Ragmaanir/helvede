@@ -64,30 +64,8 @@ namespace Helvede {
 
   // }
 
-  // void crashme() {
-  //   auto s = String::to_string(1);
-
-  //   Dbg::put(10, 8, Ascii::decimal_to_code(s.length()), 0x1f);
-
-  //   for(uint32 i = 0; i < s.length(); i++) {
-  //     Dbg::put(10 + i, 4, s.at(i), 0x1f);
-  //     Dbg::put(10 + i, 5, s.at(i), 0x2f);
-  //   }
-
-  //   Dbg::put(0, 10, '1', 0x2f);
-
-  //   VGATerminal t = VGATerminal();
-  //   t.puts("AAA");
-  //   t.puts("BBB");
-
-  //   Dbg::put(0, 11, '2', 0x2f);
-  // }
-
-
   void main(Pointer64 heap_start) {
     TermColorings::static_init();
-
-    //crashme();
 
     //allocator = instantiate((void*)0xf000, KISSAllocator(heap, 32));
     VGATerminal t = VGATerminal();
