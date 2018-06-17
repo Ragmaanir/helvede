@@ -1,3 +1,4 @@
+#include "table_descriptor.hpp"
 
 #define $$concat(a, ...) $$concat_f(a, __VA_ARGS__)
 #define $$concat_f(a, ...) a ## __VA_ARGS__
@@ -190,33 +191,6 @@ namespace Helvede {
 
     static_assert(sizeof(Entry) == 16, "Entry size");
 
-    // Can be used as GDT and IDT descriptor
-    union TableDescriptor {
-      uint8 data[6];
-
-      struct Structured {
-        uint16 limit;
-        uint32 base;
-      } __attribute__((packed)) structured;
-
-      TableDescriptor() {
-        TableDescriptor(0,0);
-      }
-
-      TableDescriptor(Entry *base, uint32 limit) {
-        // FIXME: raise if limit > 0xffff
-        uint32 address = (uint32)((uint64)base);
-
-        structured.limit = limit - 1;
-        structured.base = address;
-      }
-    };
-
-    using IDTDescriptor = TableDescriptor;
-
-    static_assert(sizeof(IDTDescriptor) == 6, "IDTDescriptor size");
-    static_assert(sizeof(IDTDescriptor::Structured) == 6, "IDTDescriptor structure size");
-
     InterruptDescriptorTable(VGATerminal& t) : _chained_pics(0x20, 0x28), _t(t) {
       t.puts(
         "PIC: ",
@@ -246,7 +220,7 @@ namespace Helvede {
       _entries[11] = Entry((void*)((uint64)core_isr_11));
       _entries[12] = Entry((void*)((uint64)core_isr_12));
 
-      _idt_desc = IDTDescriptor(_entries, IDT_ENTRY_COUNT * sizeof(Entry));
+      _idt_desc = TableDescriptor(_entries, IDT_ENTRY_COUNT * sizeof(Entry));
 
       asm(
         "mov rax, %0\n"
@@ -277,7 +251,7 @@ namespace Helvede {
 
     Entry _entries[IDT_ENTRY_COUNT];
     ChainedPics _chained_pics;
-    IDTDescriptor _idt_desc;
+    TableDescriptor _idt_desc;
     VGATerminal& _t;
   };
 

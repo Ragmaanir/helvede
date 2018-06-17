@@ -90,7 +90,7 @@ namespace Helvede {
     void test_idt() {
       InterruptDescriptorTable::Entry *ptr = (InterruptDescriptorTable::Entry*)0xf0f0f0f0f0f0f0f0;
 
-      InterruptDescriptorTable::IDTDescriptor d = InterruptDescriptorTable::IDTDescriptor(ptr, 0xffff);
+      TableDescriptor d = TableDescriptor(ptr, 0xffff);
 
       $assert_equal(d.structured.base, 0b11110000111100001111000011110000);
       $assert_equal(d.structured.limit, 0b1111111111111110);
