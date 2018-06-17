@@ -1,6 +1,6 @@
 #!/bin/bash
-#./build_docker.sh
-./build.sh
+./build_docker.sh
+#./build.sh
 
 qemu-system-x86_64 -hda output/image.iso -s -serial file:stdio -D qemu.log -d int,cpu_reset -no-reboot -no-shutdown &
 

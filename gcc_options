@@ -1,4 +1,7 @@
+-std=c++1y
+-masm=intel
 -ggdb
+-march=x86-64
 -ffreestanding
 -Wall
 -Wextra
@@ -7,8 +10,7 @@
 -fno-stack-protector
 -fno-builtin
 -mno-sse
+-mno-mmx
 -mstackrealign
 -Wno-unused-parameter
 -mno-red-zone
--std=c++1y
--masm=intel

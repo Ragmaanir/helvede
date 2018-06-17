@@ -7,4 +7,4 @@ RUN pacman -S xorriso --noconfirm
 RUN pacman -S mtools --noconfirm
 #ADD source /root/helvede/source
 #ADD output /root/helvede/output
-ADD build.sh /root/helvede/
+ADD build.sh gcc_options /root/helvede/
