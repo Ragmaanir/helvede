@@ -2,6 +2,7 @@
 -masm=intel
 -ggdb
 -march=x86-64
+-mabi=sysv
 -ffreestanding
 -Wall
 -Wextra
@@ -9,8 +10,9 @@
 -fno-rtti
 -fno-stack-protector
 -fno-builtin
--mno-sse
--mno-mmx
+-mno-default
+-mno-abm
 -mstackrealign
 -Wno-unused-parameter
 -mno-red-zone
+-mgeneral-regs-only
