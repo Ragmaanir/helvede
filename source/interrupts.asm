@@ -38,10 +38,10 @@ global isr_pointer_table
     isr_push_registers
 
     mov rdi, %1
-    call dbg_print_interrupt
+    call common_isr_handler_callback
 
     mov rdi, %1
-    call common_isr_handler_callback
+    call dbg_print_interrupt
 
     isr_pop_registers
     sti

@@ -151,11 +151,6 @@ namespace Helvede {
 
       _chained_pics.remap();
 
-      // /* mask to allow only keyboard */
-      // _chained_pics.first().write_data(0xfd);
-      // _chained_pics.second().write_data(0xff);
-
-
       for(uint32 i = 0; i < 256; i++) {
         _entries[i] = Entry((void*)isr_pointer_table[i]);
       }
@@ -165,10 +160,10 @@ namespace Helvede {
       asm(
         "mov rax, %0\n"
         "lidt [rax]\n"
-        :: "r"(&_idt_desc)
+        :: "r"(&_idt_desc) : "memory"
       );
 
-      asm("sti" ::);
+      asm volatile("sti" ::: "memory");
     }
 
   private:
@@ -190,4 +185,36 @@ extern "C" void common_isr_handler_callback(uint64 i) {
   //t.puts("IRQ #", i, "(", Helvede::interrupt_name(i), "), count: ", Helvede::String::to_string(invocation_count));
   t.print("IRQ #", i);
   t.puts("(", Helvede::interrupt_name(i), "), count: ", Helvede::String::to_string(invocation_count));
+
+  if(i >= 32) {
+
+
+    if(i == 33) {
+      Helvede::Dbg::put(20, 15, 'K');
+
+      Helvede::Port<uint8> kb = Helvede::Port<uint8>(0x60);
+      uint8 key = kb.read();
+
+      //Helvede::Dbg::put(21, 15, key);
+      t.print("Key: ");
+      t.print(Helvede::String::to_string(key));
+      t.puts("    ");
+    } else {
+      Helvede::Dbg::put(19, 15, 'O');
+    }
+
+    asm volatile(
+      "movb al, 0x20\n"
+      "outb 0x20, al\n"
+      ::: "memory"
+    );
+
+    if(i >= 32 + 8) {
+      asm volatile(
+        "movb al, 0x20\n"
+        "outb 0xa0, al\n"
+        ::: "memory"
+      );
+    }
+  }
 }

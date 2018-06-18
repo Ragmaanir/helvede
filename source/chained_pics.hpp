@@ -28,35 +28,6 @@ namespace Helvede {
       delay_port.write(Pic::Commands::INIT);
     }
 
-    // void remap() {
-    //   asm volatile(
-    //     "movb al, 0x11\n"
-    //     "outb 0x20, al\n"
-    //     "outb 0xa0, al\n"
-
-    //     "movb al, 0x20\n"
-    //     "outb 0x21, al\n"
-    //     "movb al, 0x28\n"
-    //     "outb 0xa1, al\n"
-
-    //     "movb al, 0x4\n"
-    //     "outb 0x21, al\n"
-    //     "movb al, 0x2\n"
-    //     "outb 0xa1, al\n"
-
-    //     "movb al, 0x1\n"
-    //     "outb 0x21, al\n"
-    //     "movb al, 0x1\n"
-    //     "outb 0xa1, al\n"
-
-    //     "movb al, 0xfd\n"
-    //     "outb 0x21, al\n"
-    //     "movb al, 0xff\n"
-    //     "outb 0xa1, al\n"
-    //     ::
-    //   );
-    // }
-
     void remap() {
       uint8 mask1, mask2;
 
