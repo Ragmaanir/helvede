@@ -186,19 +186,6 @@ static uint32 invocation_count = 0;
 extern "C" void common_isr_handler_callback(uint64 i) {
   invocation_count += 1;
 
-  // if(i == 1) {
-  //   VGATerminal t(18,20);
-  //   t.puts("KEYBOARD");
-  // } else {
-  //   VGATerminal t(16,20);
-  //   t.puts("IRQ #", i, "(", Helvede::interrupt_name(i), ")" " count: ", invocation_count);
-  //   //t.puts("IRQ #", i, "(", Helvede::interrupt_name(i), ")" " count: ", Helvede::String::to_string(invocation_count));
-  //   //t.puts("IRQ #", i, "(", Helvede::interrupt_name(i), ")");
-  //   // t.puts("1234");
-  // }
-
-  // Helvede::Dbg::put(0, 23, Helvede::Ascii::decimal_to_code((uint8)invocation_count), 0x3f);
-
   VGATerminal t(21,10);
   //t.puts("IRQ #", i, "(", Helvede::interrupt_name(i), "), count: ", Helvede::String::to_string(invocation_count));
   t.print("IRQ #", i);
