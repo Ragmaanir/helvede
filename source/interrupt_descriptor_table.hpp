@@ -44,7 +44,7 @@ namespace Helvede {
     NMIInterrupt = 2
   };
 
-  static const char* const lower_interrupt_name_table[] = {
+  static const char* const cpu_exception_name_table[] = {
     "Divide by zero",
     "Reserved",
     "NMI Interrupt",
@@ -67,9 +67,28 @@ namespace Helvede {
     "SIMD Floating-Point Exception"
   };
 
-  const char* const lower_interrupt_names(uint32 i) {
+  static const char* const isa_irq_name_table[] = {
+    "Programmable Interrupt Timer Interrupt",
+    "Keyboard Interrupt",
+    "Cascade",
+    "COM2",
+    "COM1",
+    "LPT2",
+    "Floppy Disk",
+    "LPT1 / Unreliable (spurious) interrupt",
+    "CMOS real-time clock",
+    "Free for peripherals / legacy SCSI / NIC",
+    "Free for peripherals / SCSI / NIC",
+    "Free for peripherals / SCSI / NIC",
+    "PS2 Mouse",
+    "FPU / Coprocessor / Inter-processor",
+    "Primary ATA Hard Disk",
+    "Secondary ATA Hard Disk"
+  };
+
+  const char* const cpu_exception_name(uint32 i) {
     if(i < 20) {
-      return lower_interrupt_name_table[i];
+      return cpu_exception_name_table[i];
     } else {
       return "No name for interrupt defined";
     }
@@ -77,9 +96,11 @@ namespace Helvede {
 
   const char* interrupt_name(uint32 i) {
     if(i < 0x14) {
-      return lower_interrupt_names(i);
+      return cpu_exception_name(i);
     } else if (i < 0x20) {
       return "Reserved";
+    } else if(i < 0x20 + 16) {
+      return isa_irq_name_table[i - 0x20];
     } else {
       return "User definable";
     }
@@ -113,7 +134,8 @@ namespace Helvede {
 
         structured.offset_low = address & WORD;
         structured.selector = 0x8;
-        structured.flags = (0x1 << 15) | (0xE << 8);
+        // structured.flags = (0x1 << 15) | (0xE << 8);
+        structured.flags = 0x8e << 8;
         structured.offset_mid = (address >> 16) & WORD;
         structured.offset_high = (address >> 32) & DWORD;
         structured.zero = 0;
@@ -122,25 +144,21 @@ namespace Helvede {
 
     static_assert(sizeof(Entry) == 16, "Entry size");
 
-    InterruptDescriptorTable(VGATerminal& t) : _chained_pics(0x20, 0x28), _t(t) {
-      t.puts(
-        "PIC: ",
-        "0: ", _chained_pics.first().offset(),
-        " 1: ", _chained_pics.second().offset()
-      );
-    }
+    InterruptDescriptorTable(VGATerminal& t) : _chained_pics(0x20, 0x28), _t(t) { }
 
     void install() {
       VGATerminal t = _t;
 
       _chained_pics.remap();
 
-      //uint8 offset = _chained_pics.first().offset();
+      // /* mask to allow only keyboard */
+      // _chained_pics.first().write_data(0xfd);
+      // _chained_pics.second().write_data(0xff);
+
 
       for(uint32 i = 0; i < 256; i++) {
         _entries[i] = Entry((void*)isr_pointer_table[i]);
       }
-
 
       _idt_desc = TableDescriptor(_entries, IDT_ENTRY_COUNT * sizeof(Entry));
 
@@ -151,9 +169,6 @@ namespace Helvede {
       );
 
       asm("sti" ::);
-      asm("xchg bx, bx" ::);
-      _chained_pics.first().write_data(0xFD);
-      _chained_pics.first().write_data(0);
     }
 
   private:
@@ -166,11 +181,11 @@ namespace Helvede {
 
 }
 
-
-static uint64 invocation_count = 0;
+static uint32 invocation_count = 0;
 
 extern "C" void common_isr_handler_callback(uint64 i) {
   invocation_count += 1;
+
   // if(i == 1) {
   //   VGATerminal t(18,20);
   //   t.puts("KEYBOARD");
@@ -182,8 +197,10 @@ extern "C" void common_isr_handler_callback(uint64 i) {
   //   // t.puts("1234");
   // }
 
-  Helvede::Dbg::put(i, 17, Helvede::Ascii::decimal_to_code((uint8)i), 0x3f);
+  // Helvede::Dbg::put(0, 23, Helvede::Ascii::decimal_to_code((uint8)invocation_count), 0x3f);
 
-  VGATerminal t(16,20);
-  t.puts("IRQ #", i, "(", Helvede::interrupt_name(i), "), count: ", Helvede::String::to_string(invocation_count));
+  VGATerminal t(21,10);
+  //t.puts("IRQ #", i, "(", Helvede::interrupt_name(i), "), count: ", Helvede::String::to_string(invocation_count));
+  t.print("IRQ #", i);
+  t.puts("(", Helvede::interrupt_name(i), "), count: ", Helvede::String::to_string(invocation_count));
 }

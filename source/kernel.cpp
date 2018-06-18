@@ -20,6 +20,7 @@
 #include "logger.hpp"
 #include "port.hpp"
 #include "pic.hpp"
+#include "chained_pics.hpp"
 #include "interrupt_descriptor_table.hpp"
 #include "tests.hpp"
 
@@ -102,10 +103,13 @@ namespace Helvede {
     InterruptDescriptorTable idt(t);
     idt.install();
 
+    // asm("int 2\n");
 
     t.puts("--- SUCCESS ---");
 
-    // asm("int 2\n");
+    for(;;) {
+      asm("hlt");
+    }
 
     // uint32 x = 1 / (String::to_string(0).length() - 1);
 

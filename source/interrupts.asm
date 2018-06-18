@@ -1,6 +1,7 @@
 extern empty_isr_handler_callback
 extern common_isr_handler_callback
 
+extern dbg_print_interrupt
 extern gdb_breakpoint
 
 global empty_isr_handler
@@ -33,19 +34,11 @@ global isr_pointer_table
 
 %macro define_isr 1
   core_isr_%1:
-    xchg bx, bx
     cli
     isr_push_registers
-    ; ;
-    ; mov rax, [str_zero]
-    ; mov rdi, 0x5f005f005f005f00
-    ; or rax, rdi
-    ; add rax, %1
-    ; mov qword [0xb8000 + 140], rax
-    ; ;
 
-    ;mov rdi, %1
-    ;call print_isr_number
+    mov rdi, %1
+    call dbg_print_interrupt
 
     mov rdi, %1
     call common_isr_handler_callback
@@ -77,24 +70,6 @@ empty_isr_handler:
   isr_pop_registers
   sti
   iretq
-
-print_isr_number:
-  mov ax, di
-  or ax, 0x6f00
-  mov word [0xb8000 + 140], ax
-  ret
-
-; print_isr_number:
-;   mov cx, di
-;   add cx, 48
-;   or cx, 0x2f00
-;   mov word [0xb8000 + 130], cx
-
-;   mov rax, 0x6f006f006f006f00
-;   shl rdi, 48
-;   or rax, rdi
-;   mov qword [0xb8000 + 140], rax
-;   ret
 
 %define  core_isr_ref(i) core_isr_%+i
 

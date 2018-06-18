@@ -19,3 +19,7 @@ extern "C" void gdb_breakpoint() {
   // FIXME: need side-effect
   Helvede::Dbg::put(70, 22, ' ', 0x00);
 }
+
+extern "C" void dbg_print_interrupt(uint8 i) {
+  Helvede::Dbg::put(i, 24, Helvede::Ascii::decimal_to_code(i), 0x3f);
+}
